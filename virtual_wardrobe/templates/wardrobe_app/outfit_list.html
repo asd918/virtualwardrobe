@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}My Outfits{% endblock %}
+
+{% block content %}
+    <h1>My Outfits</h1>
+    
+    <a href="{% url 'wardrobe:outfit_create' %}" class="btn btn-primary mb-3">Create New Outfit</a>
+    
+    {% if outfits %}
+        <div class="row">
+            {% for outfit in outfits %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ outfit.name }}</h5>
+                            <p class="card-text">
+                                <strong>Items:</strong>
+                                {% for item in outfit.items.all %}
+                                    {{ item.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <a href="{% url 'wardrobe:outfit_update' outfit.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                            <a href="{% url 'wardrobe:outfit_delete' outfit.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No outfits found.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Clothing Item{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Edit Clothing Item</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+                            {{ form.name.errors }}
+                            <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}" 
+                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.name.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                            {{ form.category.errors }}
+                            <div class="input-group">
+                                <select name="{{ form.category.html_name }}" id="{{ form.category.id_for_label }}" 
+                                        class="form-select {% if form.category.errors %}is-invalid{% endif %}">
+                                    <option value="">---------</option>
+                                    {% for category_id, category_name in form.category.field.choices %}
+                                        {% if category_id %}
+                                            <option value="{{ category_id }}" {% if form.category.value|stringformat:"s" == category_id|stringformat:"s" %}selected{% endif %}>
+                                                {{ category_name }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <a href="{% url 'wardrobe:category_create' %}" class="btn btn-outline-secondary" target="_blank">
+                                    <i class="fas fa-plus"></i> New Category
+                                </a>
+                            </div>
+                            {% if form.category.help_text %}
+                                <small class="form-text text-muted">{{ form.category.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.color.id_for_label }}" class="form-label">Color</label>
+                            {{ form.color.errors }}
+                            <input type="text" name="{{ form.color.html_name }}" id="{{ form.color.id_for_label }}" 
+                                   class="form-control {% if form.color.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.color.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.season.id_for_label }}" class="form-label">Season</label>
+                            {{ form.season.errors }}
+                            <select name="{{ form.season.html_name }}" id="{{ form.season.id_for_label }}" 
+                                    class="form-select {% if form.season.errors %}is-invalid{% endif %}">
+                                {% for season_value, season_name in form.season.field.choices %}
+                                    <option value="{{ season_value }}" {% if form.season.value == season_value %}selected{% endif %}>
+                                        {{ season_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Occasions</label>
+                            {{ form.occasions.errors }}
+                            <div class="row">
+                                {% for checkbox in form.occasions %}
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            {{ checkbox.tag }}
+                                            <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                                {{ checkbox.choice_label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Image</label>
+                            {{ form.image.errors }}
+                            <input type="file" name="{{ form.image.html_name }}" id="{{ form.image.id_for_label }}" 
+                                   class="form-control {% if form.image.errors %}is-invalid{% endif %}">
+                            {% if form.image.help_text %}
+                                <small class="form-text text-muted">{{ form.image.help_text }}</small>
+                            {% endif %}
+                            
+                            {% if item.image %}
+                                <div class="mt-2">
+                                    <p class="mb-1">Current image:</p>
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.purchase_date.id_for_label }}" class="form-label">Purchase Date</label>
+                                {{ form.purchase_date.errors }}
+                                <input type="date" name="{{ form.purchase_date.html_name }}" id="{{ form.purchase_date.id_for_label }}" 
+                                       class="form-control {% if form.purchase_date.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.purchase_date.value|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.brand.id_for_label }}" class="form-label">Brand</label>
+                                {{ form.brand.errors }}
+                                <input type="text" name="{{ form.brand.html_name }}" id="{{ form.brand.id_for_label }}" 
+                                       class="form-control {% if form.brand.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.brand.value|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ form.notes.errors }}
+                            <textarea name="{{ form.notes.html_name }}" id="{{ form.notes.id_for_label }}" 
+                                      class="form-control {% if form.notes.errors %}is-invalid{% endif %}" 
+                                      rows="3">{{ form.notes.value|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'wardrobe:item_list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Item Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong> {{ item.created_at|date:"F j, Y" }}</p>
+                    <p><strong>Last Updated:</strong> {{ item.updated_at|date:"F j, Y" }}</p>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'wardrobe:item_detail' pk=item.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>View Item
+                        </a>
+                        <a href="{% url 'wardrobe:item_delete' pk=item.pk %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-2"></i>Delete Item
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Update the category to better organize your items
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Add notes to remember important details about this item
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

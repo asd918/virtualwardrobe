@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Weather Dashboard{% endblock %}
+
+{% block content %}
+    <h1>Weather Dashboard</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Current Weather
+                </div>
+                <div class="card-body">
+                    <form id="weather-form">
+                        <div class="mb-3">
+                            <label for="city" class="form-label">Enter City:</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Get Weather</button>
+                    </form>
+                    
+                    <div id="weather-data" style="display: none;">
+                        <h3>Weather in <span id="city-name"></span></h3>
+                        <p><strong>Temperature:</strong> <span id="temperature"></span></p>
+                        <p><strong>Condition:</strong> <span id="condition"></span></p>
+                        <p><strong>Humidity:</strong> <span id="humidity"></span></p>
+                        <p><strong>Wind Speed:</strong> <span id="wind-speed"></span></p>
+                    </div>
+                    
+                    <div id="weather-error" class="alert alert-danger" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Outfit Recommendation
+                </div>
+                <div class="card-body">
+                    <p>Based on the weather, we recommend:</p>
+                    <ul id="outfit-recommendation">
+                        <li>Outfit 1</li>
+                        <li>Outfit 2</li>
+                        <li>Outfit 3</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% block extra_js %}
+        <script>
+            $(document).ready(function() {
+                $('#weather-form').submit(function(event) {
+                    event.preventDefault();
+                    
+                    var city = $('#city').val();
+                    
+                    $.ajax({
+                        url: '/wardrobe/get_weather/',
+                        type: 'GET',
+                        data: { city: city },
+                        dataType: 'json',
+                        success: function(data) {
+                            $('#city-name').text(data.city);
+                            $('#temperature').text(data.temperature);
+                            $('#condition').text(data.condition);
+                            $('#humidity').text(data.humidity);
+                            $('#wind-speed').text(data.wind_speed);
+                            
+                            $('#weather-data').show();
+                            $('#weather-error').hide();
+                        },
+                        error: function(xhr, status, error) {
+                            $('#weather-error').text('Error: ' + xhr.responseJSON.error);
+                            $('#weather-error').show();
+                            $('#weather-data').hide();
+                        }
+                    });
+                });
+            });
+        </script>
+    {% endblock %}
+{% endblock %}

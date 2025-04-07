@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Clothing Categories{% endblock %}
+
+{% block content %}
+    <h1>Clothing Categories</h1>
+    
+    <a href="{% url 'wardrobe:category_create' %}" class="btn btn-primary mb-3">Add New Category</a>
+    
+    {% if categories %}
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="card-text">{{ category.description }}</p>
+                            <a href="{% url 'wardrobe:category_update' category.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                            <a href="{% url 'wardrobe:category_delete' category.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No categories found.</p>
+    {% endif %}
+{% endblock %}

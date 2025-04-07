@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}My Clothing Items{% endblock %}
+
+{% block content %}
+    <h1>My Clothing Items</h1>
+    
+    <a href="{% url 'wardrobe:item_create' %}" class="btn btn-primary mb-3">Add New Item</a>
+    
+    {% if items %}
+        <div class="row">
+            {% for item in items %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                        {% else %}
+                            <div class="no-image-placeholder">No Image</div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <p class="card-text">
+                                <strong>Category:</strong> {{ item.category }}<br>
+                                <strong>Color:</strong> {{ item.color }}<br>
+                                <strong>Season:</strong> {{ item.get_season_display }}
+                            </p>
+                            <a href="{% url 'wardrobe:item_update' item.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                            <a href="{% url 'wardrobe:item_delete' item.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No clothing items found.</p>
+    {% endif %}
+{% endblock %}

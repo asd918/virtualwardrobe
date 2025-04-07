@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wardrobe - Virtual Wardrobe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4">My Wardrobe</h1>
+            <p class="lead">Welcome back to your virtual wardrobe! Here's an overview of your collection.</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-tshirt fa-4x mb-3 text-primary"></i>
+                    <h2 class="card-title">{{ item_count }}</h2>
+                    <p class="card-text">Clothing Items</p>
+                    <a href="{% url 'wardrobe:item_list' %}" class="btn btn-primary">Manage Items</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-user-tie fa-4x mb-3 text-success"></i>
+                    <h2 class="card-title">{{ outfit_count }}</h2>
+                    <p class="card-text">Outfits</p>
+                    <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-success">Manage Outfits</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-tags fa-4x mb-3 text-info"></i>
+                    <h2 class="card-title">{{ category_count }}</h2>
+                    <p class="card-text">Categories</p>
+                    <a href="{% url 'wardrobe:category_list' %}" class="btn btn-info">Manage Categories</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Items and Weather Section -->
+    <div class="row">
+        <!-- Recent Items -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Items</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_items %}
+                        <div class="row">
+                            {% for item in recent_items %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        {% if item.image %}
+                                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                                        {% else %}
+                                            <div class="card-img-top bg-light text-center py-5">
+                                                <i class="fas fa-tshirt fa-3x text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ item.name }}</h6>
+                                            <p class="card-text small text-muted">
+                                                {{ item.category.name|default:"No Category" }} | {{ item.color }}
+                                            </p>
+                                            <a href="{% url 'wardrobe:item_detail' pk=item.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'wardrobe:item_list' %}" class="btn btn-outline-primary">View All Items</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tshirt fa-3x mb-3 text-secondary"></i>
+                            <p>You haven't added any clothing items yet.</p>
+                            <a href="{% url 'wardrobe:item_create' %}" class="btn btn-primary">Add Your First Item</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Weather Widget -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Weather</h5>
+                </div>
+                <div class="card-body">
+                    {% if weather_data %}
+                        <div class="text-center mb-3">
+                            <h6>{{ weather_data.name }}</h6>
+                            <div class="display-4 mb-0">{{ weather_data.main.temp|floatformat:0 }}°C</div>
+                            <p>{{ weather_data.weather.0.description|title }}</p>
+                        </div>
+                        <div class="row text-center small">
+                            <div class="col">
+                                <i class="fas fa-tint text-primary"></i>
+                                <p>{{ weather_data.main.humidity }}% Humidity</p>
+                            </div>
+                            <div class="col">
+                                <i class="fas fa-wind text-info"></i>
+                                <p>{{ weather_data.wind.speed }} m/s Wind</p>
+                            </div>
+                        </div>
+                        {% if suggested_outfits %}
+                            <hr>
+                            <h6 class="mb-3">Suggested Outfits:</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for outfit in suggested_outfits|slice:":3" %}
+                                    <li class="list-group-item px-0">
+                                        <a href="{% url 'wardrobe:outfit_detail' pk=outfit.pk %}" class="text-decoration-none">
+                                            {{ outfit.name }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-cloud-sun fa-3x mb-3 text-secondary"></i>
+                            <p>Weather data not available.</p>
+                        </div>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'wardrobe:weather_dashboard' %}" class="btn btn-outline-info">Weather Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'wardrobe:item_create' %}" class="btn btn-outline-primary w-100 h-100 py-3">
+                                <i class="fas fa-plus mb-2 d-block"></i>
+                                Add New Item
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'wardrobe:outfit_create' %}" class="btn btn-outline-success w-100 h-100 py-3">
+                                <i class="fas fa-plus mb-2 d-block"></i>
+                                Create New Outfit
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'wardrobe:category_create' %}" class="btn btn-outline-info w-100 h-100 py-3">
+                                <i class="fas fa-folder-plus mb-2 d-block"></i>
+                                Add New Category
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'wardrobe:dashboard' %}" class="btn btn-outline-secondary w-100 h-100 py-3">
+                                <i class="fas fa-chart-line mb-2 d-block"></i>
+                                Go to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
