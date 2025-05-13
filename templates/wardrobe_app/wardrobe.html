@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wardrobe{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Quick Actions Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'wardrobe:add_item' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add New Item
+                        </a>
+                        <a href="{% url 'wardrobe:outfit_create' %}" class="btn btn-primary">
+                            <i class="fas fa-tshirt me-2"></i>Create Outfit
+                        </a>
+                        <a href="{% url 'wardrobe:item_list' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>View All Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Items Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Items
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in items|slice:":6" %}
+                            <div class="col-md-4 col-lg-2 mb-4">
+                                <div class="card h-100">
+                                    {% if item.image %}
+                                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 100%; width: 100%; object-fit: cover; object-position: center;">
+                                    {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ item.name }}</h6>
+                                        <p class="card-text small text-muted">
+                                            {{ item.category.name }} • {{ item.get_season_display }}
+                                        </p>
+                                        <a href="{% url 'wardrobe:item_detail' item.id %}" class="btn btn-sm btn-primary w-100">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No items added yet. Start by adding your first clothing item!
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outfits Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-people-group me-2"></i>Your Outfits
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for outfit in outfits|slice:":6" %}
+                            <div class="col-md-4 col-lg-2 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ outfit.name }}</h6>
+                                        <p class="card-text small text-muted">
+                                            {{ outfit.occasion }} • {{ outfit.get_season_display }}
+                                        </p>
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
+                                            {% for item in outfit.items.all|slice:":3" %}
+                                                {% if item.image %}
+                                                <img src="{{ item.image.url }}" class="rounded" style="width: 50px; height: 50px; object-fit: cover;" alt="{{ item.name }}">
+                                                {% else %}
+                                                <div class="rounded bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <a href="{% url 'wardrobe:outfit_detail' outfit.id %}" class="btn btn-sm btn-primary w-100">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No outfits created yet. Start by creating your first outfit!
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add loading spinner for AJAX requests
+    $(document).ajaxStart(function() {
+        showLoading();
+    }).ajaxStop(function() {
+        hideLoading();
+    });
+
+    // Initialize tooltips
+    $(function () {
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %}

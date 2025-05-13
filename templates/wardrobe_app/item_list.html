@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}My Clothing Items{% endblock %}
+
+{% block content %}
+    <h1>My Clothing Items</h1>
+    
+    <a href="{% url 'wardrobe:add_item' %}" class="btn btn-primary mb-3">Add New Item</a>
+    
+    {% if items %}
+        <div class="row">
+            {% for item in items %}
+                <div class="col-md-3 col-lg-2 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-img-container" style="height: 180px; overflow: hidden;">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 100%; width: 100%; object-fit: cover; object-position: center;">
+                            {% else %}
+                                <div class="no-image-placeholder bg-light d-flex align-items-center justify-content-center" style="height: 100%;">
+                                    <span class="text-muted">No Image</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1">{{ item.name }}</h6>
+                            <p class="card-text small mb-2">
+                                <span class="badge bg-secondary">{{ item.category }}</span>
+                                <span class="badge bg-primary">{{ item.color }}</span>
+                                <span class="badge bg-info text-dark">{{ item.get_season_display }}</span>
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'wardrobe:edit_item' item.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a href="{% url 'wardrobe:delete_item' item.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No clothing items found.</p>
+    {% endif %}
+{% endblock %}

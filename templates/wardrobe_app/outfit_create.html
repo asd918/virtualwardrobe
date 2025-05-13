@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Create New Outfit{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>Create New Outfit
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Name <span class="text-danger">*</span></label>
+                                {{ form.name|add_class:'form-control'|attr:'placeholder:Enter outfit name' }}
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.template_category.id_for_label }}" class="form-label">Category</label>
+                                {{ form.template_category|add_class:'form-select' }}
+                                {% if form.template_category.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.template_category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12">
+                                <label for="{{ form.items.id_for_label }}" class="form-label">Items <span class="text-danger">*</span></label>
+                                {{ form.items|add_class:'form-select'|attr:'multiple:true' }}
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple items</div>
+                                {% if form.items.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.items.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.suggested_temperature_min.id_for_label }}" class="form-label">Suggested temperature min</label>
+                                {{ form.suggested_temperature_min|add_class:'form-control'|attr:'placeholder:Min °C' }}
+                                <div class="form-text">Minimum temperature in °C</div>
+                                {% if form.suggested_temperature_min.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.suggested_temperature_min.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.suggested_temperature_max.id_for_label }}" class="form-label">Suggested temperature max</label>
+                                {{ form.suggested_temperature_max|add_class:'form-control'|attr:'placeholder:Max °C' }}
+                                <div class="form-text">Maximum temperature in °C</div>
+                                {% if form.suggested_temperature_max.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.suggested_temperature_max.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column flex-md-row justify-content-end gap-2 mt-4">
+                            <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Create Outfit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap form validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+
+    // Filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryFilter = document.getElementById('categoryFilter');
+        const seasonFilter = document.getElementById('seasonFilter');
+        const styleFilter = document.getElementById('styleFilter');
+        const itemGrid = document.getElementById('itemGrid');
+        const selectedItems = document.getElementById('selectedItems');
+
+        function updateFilters() {
+            const categoryValue = categoryFilter.value;
+            const seasonValue = seasonFilter.value;
+            const styleValue = styleFilter.value;
+
+            document.querySelectorAll('.item-card').forEach(card => {
+                const showCategory = !categoryValue || card.dataset.category === categoryValue;
+                const showSeason = !seasonValue || card.dataset.season === seasonValue;
+                const showStyle = !styleValue || card.dataset.style === styleValue;
+
+                card.style.display = showCategory && showSeason && showStyle ? 'block' : 'none';
+            });
+        }
+
+        categoryFilter.addEventListener('change', updateFilters);
+        seasonFilter.addEventListener('change', updateFilters);
+        styleFilter.addEventListener('change', updateFilters);
+
+        // Handle item selection
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateSelectedItems();
+                updateSuggestions();
+            });
+        });
+
+        function updateSelectedItems() {
+            selectedItems.innerHTML = '';
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                const item = checkbox.closest('.item-card');
+                const itemName = item.querySelector('label').textContent.trim();
+                const itemImage = item.querySelector('img')?.src;
+
+                const itemElement = document.createElement('div');
+                itemElement.className = 'list-group-item';
+                itemElement.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        ${itemImage ? `<img src="${itemImage}" class="me-2" style="width: 30px; height: 30px; object-fit: cover;">` : ''}
+                        <span>${itemName}</span>
+                    </div>
+                `;
+                selectedItems.appendChild(itemElement);
+            });
+        }
+
+        function updateSuggestions() {
+            // This would be replaced with actual API calls to get suggestions
+            const selectedCount = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            
+            if (selectedCount > 0) {
+                document.getElementById('suggestionsContent').innerHTML = `
+                    <p class="card-text">Analyzing your selection...</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-palette text-primary"></i>
+                            Color coordination
+                            <div class="mt-2">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 75%">Good</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-tshirt text-primary"></i>
+                            Style compatibility
+                            <div class="mt-2">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 85%">Excellent</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-cloud-sun text-primary"></i>
+                            Weather suitability
+                            <div class="mt-2">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 60%">Fair</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-calendar-check text-primary"></i>
+                            Occasion appropriateness
+                            <div class="mt-2">
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 90%">Perfect</div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                `;
+            } else {
+                document.getElementById('suggestionsContent').innerHTML = `
+                    <p class="card-text">Select items to see smart suggestions:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-palette text-primary"></i>
+                            Color coordination
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-tshirt text-primary"></i>
+                            Style compatibility
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-cloud-sun text-primary"></i>
+                            Weather suitability
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-calendar-check text-primary"></i>
+                            Occasion appropriateness
+                        </li>
+                    </ul>
+                `;
+            }
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Virtual Wardrobe{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 text-center">
+        <h1 class="display-4 mb-4">Welcome to Virtual Wardrobe</h1>
+        <p class="lead mb-4">
+            Organize your clothing collection, create outfits, and get smart recommendations.
+        </p>
+        
+        <div class="row mt-5">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <a href="{% url 'wardrobe:dashboard' %}" class="text-decoration-none">
+                            <i class="fas fa-tshirt fa-3x mb-3 text-primary"></i>
+                            <h3 class="card-title">Manage Your Wardrobe</h3>
+                            <p class="card-text">
+                                Catalog all your clothing items with details like color, season, and occasion.
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <a href="{% url 'wardrobe:outfit_list' %}" class="text-decoration-none">
+                            <i class="fas fa-user-tie fa-3x mb-3 text-success"></i>
+                            <h3 class="card-title">Create Outfits</h3>
+                            <p class="card-text">
+                                Combine your clothing items into perfect outfits for any occasion.
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <a href="{% url 'wardrobe:weather_dashboard' %}" class="text-decoration-none">
+                            <i class="fas fa-cloud-sun fa-3x mb-3 text-info"></i>
+                            <h3 class="card-title">Weather Updates</h3>
+                            <p class="card-text">
+                                Stay updated with real-time weather conditions for your location.
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <a href="{% url 'wardrobe:smart_recommender' %}" class="text-decoration-none">
+                            <i class="fas fa-magic fa-3x mb-3 text-warning"></i>
+                            <h3 class="card-title">Smart Recommender</h3>
+                            <p class="card-text">
+                                Get AI-powered outfit suggestions based on weather and latest fashion trends.
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            {% if user.is_authenticated %}
+                <a href="{% url 'wardrobe:item_list' %}" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-tshirt me-2"></i>My Wardrobe
+                </a>
+            {% else %}
+                <a href="{% url 'wardrobe:login' %}" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="{% url 'wardrobe:register' %}" class="btn btn-success btn-lg me-2">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

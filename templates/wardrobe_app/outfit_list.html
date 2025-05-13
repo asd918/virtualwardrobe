@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}My Outfits{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0"><i class="fas fa-people-group me-2"></i>My Outfits</h1>
+            <p class="text-muted">Manage your outfit combinations</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-md-end align-items-center">
+            <a href="{% url 'wardrobe:outfit_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create New Outfit
+            </a>
+        </div>
+    </div>
+
+    {% if outfits %}
+        <div class="row g-4">
+            {% for outfit in outfits %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">{{ outfit.name }}</h5>
+                        </div>
+                        
+                        <!-- Image Preview Section -->
+                        <div class="outfit-preview p-2 bg-light">
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                {% for item in outfit.items.all|slice:":4" %}
+                                    <div class="outfit-item-thumbnail" style="width: 60px; height: 60px;">
+                                        {% if item.image %}
+                                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="img-thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div class="no-image bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="width: 100%; height: 100%;">
+                                                {{ item.name|slice:":2" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% empty %}
+                                    <div class="text-muted small fst-italic py-3">No items in this outfit</div>
+                                {% endfor %}
+                                
+                                {% if outfit.items.count > 4 %}
+                                    <div class="outfit-item-thumbnail d-flex align-items-center justify-content-center bg-white rounded" style="width: 60px; height: 60px;">
+                                        <span class="small text-muted">+{{ outfit.items.count|add:"-4" }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <p class="card-text">
+                                <strong>Items:</strong> {{ outfit.items.count }}
+                            </p>
+                            {% if outfit.suggested_temperature_min or outfit.suggested_temperature_max %}
+                                <p class="card-text">
+                                    <strong>Temperature Range:</strong>
+                                    {% if outfit.suggested_temperature_min %}{{ outfit.suggested_temperature_min }}°C{% else %}--{% endif %}
+                                    to
+                                    {% if outfit.suggested_temperature_max %}{{ outfit.suggested_temperature_max }}°C{% else %}--{% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-white d-flex justify-content-between">
+                            <a href="{% url 'wardrobe:outfit_detail' outfit.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                            <div>
+                                <a href="{% url 'wardrobe:edit_outfit' outfit.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <a href="{% url 'wardrobe:delete_outfit' outfit.id %}" class="btn btn-sm btn-outline-danger ms-1">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-people-group text-muted mb-3" style="font-size: 3rem;"></i>
+                <h4>No outfits found</h4>
+                <p class="text-muted">You haven't created any outfits yet.</p>
+                <a href="{% url 'wardrobe:outfit_create' %}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus me-2"></i>Create Your First Outfit
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Weather Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4">Weather Dashboard</h1>
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <!-- Weather Information Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Current Weather</h5>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <form id="weather-form" class="mb-4">
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline mb-2">
+                                <input class="form-check-input" type="radio" name="search_method" id="search_by_name" value="name" {% if search_method != 'id' %}checked{% endif %}>
+                                <label class="form-check-label" for="search_by_name">Search by City Name</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="search_method" id="search_by_id" value="id" {% if search_method == 'id' %}checked{% endif %}>
+                                <label class="form-check-label" for="search_by_id">Search by City ID</label>
+                                <i class="bi bi-info-circle-fill ms-1" 
+                                   data-bs-toggle="tooltip" 
+                                   title="OpenWeatherMap recommends using City IDs for more accurate results, especially for cities with the same name."></i>
+                            </div>
+                            
+                            <!-- Info callout about search methods -->
+                            <div class="alert alert-info mt-2 mb-3 p-2" style="font-size: 0.85rem;">
+                                <div class="d-flex">
+                                    <div class="me-2">
+                                        <i class="bi bi-info-circle-fill"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-1"><strong>Search Tip:</strong> OpenWeatherMap recommends using City IDs for the most accurate results.</p>
+                                        <p class="mb-0">City name searches may return unexpected results when multiple cities share the same name.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="name-search" class="mt-2" {% if search_method == 'id' %}style="display: none;"{% endif %}>
+                                <label for="city" class="form-label">City Name:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" 
+                                           id="city" name="city" value="{{ city|default:'Kuala Lumpur' }}" required>
+                                    <button type="submit" class="btn btn-primary">
+                                        Get Weather
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">Example: London, New York, Tokyo</small>
+                                <small class="form-text text-muted d-block mt-1">You can include country code for more accuracy: "London,GB" or "London,UK"</small>
+                            </div>
+                            
+                            <div id="id-search" class="mt-2" {% if search_method != 'id' %}style="display: none;"{% endif %}>
+                                <label for="city_id" class="form-label">City ID:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" 
+                                           id="city_id" name="city_id" value="{{ city_id|default:'' }}" placeholder="Enter city ID">
+                                    <button type="submit" class="btn btn-primary">
+                                        Get Weather
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <a href="{% static 'data/city.list.json' %}" download="city.list.json" target="_blank">Download city ID list</a>
+                                    - Example IDs: 2643743 (London), 5128581 (New York), 1850147 (Tokyo)
+                                </small>
+                                {% if weather_data.city_id %}
+                                <small class="form-text text-success d-block mt-1">
+                                    <i class="bi bi-bookmark-check"></i> 
+                                    Current city ID: <span class="fw-bold">{{ weather_data.city_id }}</span> ({{ weather_data.city }})
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Units selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Units:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="units" id="metric" value="metric" {% if units == 'metric' or not units %}checked{% endif %}>
+                                <label class="form-check-label" for="metric">Metric (°C, m/s)</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="units" id="imperial" value="imperial" {% if units == 'imperial' %}checked{% endif %}>
+                                <label class="form-check-label" for="imperial">Imperial (°F, mph)</label>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Weather Data Display -->
+                    <div id="weather-data" {% if not weather_data %}style="display: none;"{% endif %}>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5" id="city-name">
+                                {% if weather_data %}{{ weather_data.city }}{% endif %}
+                            </h3>
+                            <small class="text-muted" id="weather-time">
+                                {% if weather_data %}{{ weather_data.timestamp }}{% endif %}
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <h2 class="me-3 mb-0" id="temperature">
+                                {% if weather_data %}{{ weather_data.temperature|floatformat:0 }}°C{% endif %}
+                            </h2>
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    {% if weather_data and weather_data.icon %}
+                                    <img src="https://openweathermap.org/img/wn/{{ weather_data.icon }}@2x.png" alt="{{ weather_data.description }}" class="me-2" id="weather-icon" width="50" height="50">
+                                    {% endif %}
+                                    <span class="text-capitalize" id="condition">
+                                        {% if weather_data %}{{ weather_data.description }}{% endif %}
+                                    </span>
+                                </div>
+                                <small class="text-muted" id="feels-like">
+                                    {% if weather_data %}Feels like {{ weather_data.feels_like|floatformat:0 }}°C{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6 col-sm-3 mb-2">
+                                <small class="text-muted d-block">Humidity</small>
+                                <div id="humidity">{% if weather_data %}{{ weather_data.humidity }}%{% endif %}</div>
+                            </div>
+                            <div class="col-6 col-sm-3 mb-2">
+                                <small class="text-muted d-block">Wind Speed</small>
+                                <div id="wind-speed">{% if weather_data %}{{ weather_data.wind_speed }} m/s{% endif %}</div>
+                            </div>
+                            <div class="col-6 col-sm-3 mb-2">
+                                <small class="text-muted d-block">Pressure</small>
+                                <div id="pressure">{% if weather_data %}{{ weather_data.pressure }} hPa{% endif %}</div>
+                            </div>
+                            <div class="col-6 col-sm-3 mb-2">
+                                <small class="text-muted d-block">Weather Type</small>
+                                <div id="main-weather">{% if weather_data %}{{ weather_data.main }}{% endif %}</div>
+                            </div>
+                        </div>
+                        
+                        {% if coordinates %}
+                        <div class="mt-2">
+                            <small class="text-muted">Coordinates: {{ coordinates.lat|floatformat:4 }}, {{ coordinates.lon|floatformat:4 }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="weather-empty-state" class="text-center py-4" {% if weather_data %}style="display: none;"{% endif %}>
+                        <i class="bi bi-cloud-haze2 fs-1 text-muted mb-2"></i>
+                        <h5 class="text-muted">No weather data available</h5>
+                        <p class="text-muted small">
+                            Enter a city name and click "Get Weather" to see current conditions.
+                        </p>
+                        <p class="text-muted small fst-italic">
+                            Tip: Try entering a major city name (e.g., "London", "New York", "Tokyo") for more reliable results.
+                        </p>
+                    </div>
+                    
+                    <!-- Error Display -->
+                    <div id="weather-error" class="alert alert-danger mt-3" style="display: none;">
+                    </div>
+                    
+                    <!-- API Key Warning -->
+                    <div id="api-key-warning" class="alert alert-warning mt-3" {% if not using_default_key %}style="display: none;"{% endif %}>
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading h6">API Key Notice</h5>
+                                <p class="mb-0">
+                                    You're using a development OpenWeatherMap API key. For best results, please set up your own API key.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Outfit Recommendations Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Outfit Recommendations</h5>
+                </div>
+                
+                <div class="card-body">
+                    {% if recommendations and not recommendations.error %}
+                        <p class="mb-3">{{ recommendations.message }}</p>
+                        
+                        <div>
+                            {% if recommendations.recommendations.tops %}
+                            <div class="mb-3">
+                                <h5 class="h6">Tops:</h5>
+                                <ul class="ps-4">
+                                    {% for item in recommendations.recommendations.tops %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            {% if recommendations.recommendations.bottoms %}
+                            <div class="mb-3">
+                                <h5 class="h6">Bottoms:</h5>
+                                <ul class="ps-4">
+                                    {% for item in recommendations.recommendations.bottoms %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            {% if recommendations.recommendations.outerwear %}
+                            <div class="mb-3">
+                                <h5 class="h6">Outerwear:</h5>
+                                <ul class="ps-4">
+                                    {% for item in recommendations.recommendations.outerwear %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            {% if recommendations.recommendations.accessories %}
+                            <div class="mb-3">
+                                <h5 class="h6">Accessories:</h5>
+                                <ul class="ps-4">
+                                    {% for item in recommendations.recommendations.accessories %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            {% if recommendations.recommendations.general_advice %}
+                            <div class="mb-3">
+                                <h5 class="h6">General Advice:</h5>
+                                <ul class="ps-4">
+                                    {% for advice in recommendations.recommendations.general_advice %}
+                                    <li>{{ advice }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div id="outfit-recommendation">
+                            <p class="text-muted">Load weather data to see outfit recommendations.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Suggested Outfits from Wardrobe -->
+    {% if suggested_outfits %}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Suggested Outfits From Your Wardrobe</h5>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                {% for outfit in suggested_outfits %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title h6 mb-0">{{ outfit.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small text-muted mb-2">Contains:</p>
+                            <ul class="ps-4 small">
+                                {% for item in outfit.items.all|slice:":3" %}
+                                <li>{{ item.name }}</li>
+                                {% endfor %}
+                                {% if outfit.items.count > 3 %}
+                                <li>And {{ outfit.items.count|add:"-3" }} more items...</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="card-footer text-end bg-white">
+                            <a href="{% url 'wardrobe:outfit_detail' outfit_id=outfit.id %}" class="btn btn-sm btn-outline-primary">
+                                View Outfit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Help Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Weather Search Help</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>City Name vs City ID Search</h6>
+                    <p>OpenWeatherMap's API supports two methods for retrieving weather data:</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Pros</th>
+                                    <th>Cons</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>City Name</strong></td>
+                                    <td>
+                                        <ul class="mb-0 ps-3">
+                                            <li>Easy to remember</li>
+                                            <li>Intuitive to use</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="mb-0 ps-3">
+                                            <li>Less precise - cities with same name</li>
+                                            <li>May return unexpected location</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>City ID</strong></td>
+                                    <td>
+                                        <ul class="mb-0 ps-3">
+                                            <li>More precise results</li>
+                                            <li>Always returns exact city</li>
+                                            <li>Recommended by OpenWeatherMap</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="mb-0 ps-3">
+                                            <li>Requires knowing the ID</li>
+                                            <li>Less intuitive</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Best Practices for Weather Searches</h6>
+                    <ol>
+                        <li>Start with a city name search to find the city</li>
+                        <li>Note the <strong>City ID</strong> from the results</li>
+                        <li>For future searches, use the City ID for more reliable results</li>
+                        <li>Download the city list if you need to look up specific locations</li>
+                    </ol>
+                    
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">Tip for Ambiguous City Names</h6>
+                        <p class="mb-0">If searching by name, you can add the country code for more accuracy: <code>London,GB</code> or <code>Paris,FR</code></p>
+                    </div>
+                    
+                    <p>
+                        <a href="https://openweathermap.org/current#cityid" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-book"></i> OpenWeatherMap Documentation
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize tooltip
+        $('[data-bs-toggle="tooltip"]').tooltip();
+        
+        // Toggle between search methods
+        $('input[name="search_method"]').change(function() {
+            var method = $(this).val();
+            if (method === 'name') {
+                $('#name-search').show();
+                $('#id-search').hide();
+            } else {
+                $('#name-search').hide();
+                $('#id-search').show();
+            }
+        });
+        
+        // Store last successful city ID
+        let lastCityId = localStorage.getItem('lastCityId');
+        let lastCityName = localStorage.getItem('lastCityName');
+        
+        // If we have a valid city ID and name stored and the field is empty, show a suggestion
+        if (lastCityId && lastCityName && $('#city_id').val() === '') {
+            $('#city-id-suggestion').remove(); // Remove any existing suggestion
+            $('#id-search').append(
+                '<div id="city-id-suggestion" class="mt-2 alert alert-success p-2">' +
+                '<small><i class="bi bi-lightbulb"></i> Last successful search: <strong>' + lastCityName + '</strong> (ID: ' + lastCityId + ')' +
+                ' <button class="btn btn-sm btn-outline-success py-0 px-1 ms-1" id="use-last-city-id">Use this ID</button></small>' +
+                '</div>'
+            );
+            
+            // Button to use the last successful city ID
+            $('#use-last-city-id').click(function(e) {
+                e.preventDefault();
+                $('#city_id').val(lastCityId);
+            });
+        }
+        
+        $('#weather-form').submit(function(event) {
+            event.preventDefault();
+            
+            var searchMethod = $('input[name="search_method"]:checked').val();
+            var city = $('#city').val();
+            var cityId = $('#city_id').val();
+            var units = $('input[name="units"]:checked').val() || 'metric';
+            
+            $('#weather-data').hide();
+            $('#weather-empty-state').hide();
+            $('#weather-error').hide();
+            
+            // Build the API URL based on search method
+            var apiUrl = '{% url "wardrobe:api_weather" %}';
+            if (searchMethod === 'name') {
+                apiUrl += '?city=' + encodeURIComponent(city);
+            } else {
+                apiUrl += '?id=' + encodeURIComponent(cityId);
+            }
+            
+            // Add units parameter
+            apiUrl += '&units=' + units;
+            
+            // Show loading
+            $('#weather-form button').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...');
+            
+            $.ajax({
+                url: apiUrl,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    // Enable button
+                    $('#weather-form button').prop('disabled', false).text('Get Weather');
+                    
+                    if (response.error) {
+                        // Handle error
+                        $('#weather-error').text(response.error).show();
+                        return;
+                    }
+                    
+                    const weatherData = response.weather;
+                    const recommendations = response.recommendations;
+                    
+                    // Store the city ID for future reference
+                    if (weatherData.city_id) {
+                        // Save to local storage
+                        localStorage.setItem('lastCityId', weatherData.city_id);
+                        localStorage.setItem('lastCityName', weatherData.city);
+                        
+                        // Add a "Use this ID" button if searched by name
+                        if (searchMethod === 'name') {
+                            // Remove any existing alert first
+                            $('#city-id-found').remove();
+                            
+                            // Add the alert with the city ID
+                            $('#name-search').append(
+                                '<div id="city-id-found" class="mt-2 alert alert-info p-2">' +
+                                '<small><i class="bi bi-info-circle"></i> Found City ID: <strong>' + weatherData.city_id + '</strong> for ' + weatherData.city +
+                                ' <button class="btn btn-sm btn-outline-primary py-0 px-1 ms-1" id="switch-to-id">Switch to ID search</button></small>' +
+                                '</div>'
+                            );
+                            
+                            // Add event listener for the "Switch to ID search" button
+                            $('#switch-to-id').click(function() {
+                                $('#city_id').val(weatherData.city_id);
+                                $('#search_by_id').prop('checked', true).trigger('change');
+                            });
+                        }
+                    }
+                    
+                    // Update weather display
+                    $('#city-name').text(weatherData.city);
+                    $('#weather-time').text(weatherData.timestamp);
+                    
+                    // Format temperature with the correct unit symbol
+                    const tempSymbol = units === 'metric' ? '°C' : '°F';
+                    const speedUnit = units === 'metric' ? 'm/s' : 'mph';
+                    
+                    $('#temperature').text(Math.round(weatherData.temperature) + tempSymbol);
+                    $('#condition').text(weatherData.description);
+                    $('#feels-like').text('Feels like ' + Math.round(weatherData.feels_like) + tempSymbol);
+                    $('#humidity').text(weatherData.humidity + '%');
+                    $('#wind-speed').text(weatherData.wind_speed + ' ' + speedUnit);
+                    $('#pressure').text(weatherData.pressure + ' hPa');
+                    $('#main-weather').text(weatherData.main);
+                    
+                    // Show city ID if available
+                    if (weatherData.city_id) {
+                        if ($('#city-id-display').length) {
+                            $('#city-id-display').text('City ID: ' + weatherData.city_id);
+                        } else {
+                            $('#city-name').after('<small id="city-id-display" class="d-block text-muted">City ID: ' + weatherData.city_id + '</small>');
+                        }
+                    }
+                    
+                    // Update weather icon
+                    if (weatherData.icon) {
+                        // If there's a container for the icon already
+                        if ($('#weather-icon').length) {
+                            $('#weather-icon').attr('src', 'https://openweathermap.org/img/wn/' + weatherData.icon + '@2x.png');
+                            $('#weather-icon').attr('alt', weatherData.description);
+                        } else {
+                            // If we need to create the icon element
+                            $('#condition').before('<img src="https://openweathermap.org/img/wn/' + weatherData.icon + '@2x.png" alt="' + weatherData.description + '" class="me-2" id="weather-icon" width="50" height="50">');
+                        }
+                    }
+                    
+                    // Update coordinates
+                    if (weatherData.coordinates && weatherData.coordinates.lat && weatherData.coordinates.lon) {
+                        const lat = weatherData.coordinates.lat.toFixed(4);
+                        const lon = weatherData.coordinates.lon.toFixed(4);
+                        if ($('#coordinates').length) {
+                            $('#coordinates').text('Coordinates: ' + lat + ', ' + lon);
+                        } else {
+                            $('#weather-data').append('<div class="mt-2"><small class="text-muted" id="coordinates">Coordinates: ' + lat + ', ' + lon + '</small></div>');
+                        }
+                    }
+                    
+                    // Show the weather data
+                    $('#weather-data').show();
+                    
+                    // Update recommendations
+                    let recommendationsHtml = '';
+                    
+                    if (recommendations && Object.keys(recommendations).length > 0) {
+                        recommendationsHtml += '<p class="mb-3">' + response.message + '</p>';
+                        recommendationsHtml += '<div>';
+                        
+                        // Format recommendations by category
+                        for (const [category, items] of Object.entries(recommendations)) {
+                            if (items && Array.isArray(items) && items.length > 0) {
+                                const categoryTitle = category.charAt(0).toUpperCase() + category.slice(1);
+                                recommendationsHtml += '<div class="mb-3"><h5 class="h6">' + categoryTitle + ':</h5>';
+                                recommendationsHtml += '<ul class="ps-4">';
+                                
+                                items.forEach(item => {
+                                    recommendationsHtml += '<li>' + item + '</li>';
+                                });
+                                
+                                recommendationsHtml += '</ul></div>';
+                            }
+                        }
+                        
+                        recommendationsHtml += '</div>';
+                    } else {
+                        recommendationsHtml = '<p class="text-muted">No specific recommendations available.</p>';
+                    }
+                    
+                    $('#outfit-recommendation').html(recommendationsHtml);
+                    
+                    // Update page URL without refreshing the page
+                    let newUrl = window.location.href.split('?')[0];
+                    if (searchMethod === 'name') {
+                        newUrl += '?city=' + encodeURIComponent(city) + '&units=' + units;
+                    } else {
+                        newUrl += '?id=' + encodeURIComponent(cityId) + '&units=' + units;
+                    }
+                    history.pushState({}, '', newUrl);
+                },
+                error: function(xhr, status, error) {
+                    // Enable button
+                    $('#weather-form button').prop('disabled', false).text('Get Weather');
+                    
+                    // Show error
+                    let errorMsg = 'An error occurred while fetching weather data.';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    }
+                    $('#weather-error').text(errorMsg).show();
+                    $('#weather-empty-state').show();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

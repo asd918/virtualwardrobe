@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Virtual Wardrobe{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Welcome to Your Virtual Wardrobe</h1>
+        
+        <div class="row mb-5">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-tshirt fa-4x mb-3 text-primary"></i>
+                        <h2 class="card-title">{{ item_count }}</h2>
+                        <p class="card-text">Clothing Items</p>
+                        <a href="{% url 'wardrobe:item_list' %}" class="btn btn-primary">View Items</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-user-tie fa-4x mb-3 text-success"></i>
+                        <h2 class="card-title">{{ outfit_count }}</h2>
+                        <p class="card-text">Outfits</p>
+                        <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-success">View Outfits</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-cloud-sun fa-4x mb-3 text-info"></i>
+                        <h2 class="card-title">Weather</h2>
+                        <p class="card-text">Get outfit suggestions based on weather</p>
+                        <a href="{% url 'wardrobe:weather_dashboard' %}" class="btn btn-info">Weather Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'wardrobe:add_item' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Add New Clothing Item
+                            </a>
+                            <a href="{% url 'wardrobe:outfit_create' %}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-2"></i>Create New Outfit
+                            </a>
+                            <a href="{% url 'wardrobe:category_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-tags me-2"></i>Manage Categories
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Add images to your clothing items for better visualization
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Set temperature ranges for outfits to get weather-based recommendations
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Organize your items by categories for easier management
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
