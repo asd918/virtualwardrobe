@@ -1,0 +1,28 @@
+{
+  "language": "en",
+  "disableInteractionLogs": false,
+  "disableStackdriverLogs": true,
+  "mlMinConfidence": 0.2,
+  "supportedLanguages": [],
+  "description": "AI Stylist Chatbot agent for virtual wardrobe",
+  "avatarUri": "",
+  "enableAutomaticTraining": true,
+  "onePlatformApiVersion": "v2",
+  "defaultTimezone": "Etc/UTC",
+  "isPrivate": true,
+  "analyzeQueryTextSentiment": false,
+  "enabledKnowledgeBaseNames": [],
+  "googleAssistant": {
+    "googleAssistantCompatible": false,
+    "welcomeIntentSignInRequired": false,
+    "startIntents": [],
+    "systemIntents": [],
+    "endIntentIds": [],
+    "oAuthLinking": {},
+    "voiceType": "",
+    "capabilities": [],
+    "env": ""
+  }
+}
+
+

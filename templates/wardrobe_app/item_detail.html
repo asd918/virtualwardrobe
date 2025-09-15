@@ -9,6 +9,34 @@
   <p>Season: {{ item.season }}</p>
   <p>Occasions: {{ item.occasions }}</p>
 
+  <h3>Images</h3>
+  <div class="row mb-3">
+    <div class="col-md-6 mb-2">
+      <div class="card">
+        <div class="card-header">Front</div>
+        <div class="card-body text-center">
+          {% if item.image_front %}
+          <img src="{{ item.image_front.url }}" alt="{{ item.name }} front" class="img-fluid" style="max-height: 280px; object-fit: contain;">
+          {% else %}
+          <div class="text-muted">No front image</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-2">
+      <div class="card">
+        <div class="card-header">Back</div>
+        <div class="card-body text-center">
+          {% if item.image_back %}
+          <img src="{{ item.image_back.url }}" alt="{{ item.name }} back" class="img-fluid" style="max-height: 280px; object-fit: contain;">
+          {% else %}
+          <div class="text-muted">No back image</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <h3>Outfits</h3>
   <ul>
     {% for outfit in outfits %}

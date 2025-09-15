@@ -1,0 +1,30 @@
+{
+  "name": "Casual Outfit",
+  "auto": true,
+  "userSays": [
+    {"data": [{"text": "casual outfit"}], "isTemplate": false},
+    {"data": [{"text": "give me something casual"}], "isTemplate": false},
+    {"data": [{"text": "weekend outfit idea"}], "isTemplate": false}
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "Casual idea: cotton tee + jeans + white sneakers. Want one more?"
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "fallbackIntent": false
+}
+
+

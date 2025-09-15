@@ -1,0 +1,18 @@
+recipe: default.v1
+language: en
+additional_languages: []
+
+pipeline:
+  - name: CompactLLMCommandGenerator
+    llm:
+      model_group: openai_llm
+    flow_retrieval:
+      embeddings:
+        model_group: openai_embeddings
+    user_input:
+      max_characters: 420
+
+policies:
+  - name: FlowPolicy
+
+assistant_id: ai_stylist_chatbot

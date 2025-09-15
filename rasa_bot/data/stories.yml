@@ -1,0 +1,84 @@
+version: "3.1"
+
+stories:
+- story: greet path
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- story: goodbye path
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: thank path
+  steps:
+  - intent: thank
+  - action: utter_thank
+
+- story: outfit suggestion path
+  steps:
+  - intent: outfit_suggestion
+  - action: action_outfit_suggestion
+
+- story: weather outfit path
+  steps:
+  - intent: weather_outfit
+  - action: action_weather_outfit
+
+- story: casual outfit path
+  steps:
+  - intent: casual_outfit
+  - action: action_casual_outfit
+
+- story: formal outfit path
+  steps:
+  - intent: formal_outfit
+  - action: action_formal_outfit
+
+- story: color matching path
+  steps:
+  - intent: color_matching
+  - action: action_color_matching
+
+- story: style tips path
+  steps:
+  - intent: style_tips
+  - action: action_style_tips
+
+- story: occasion outfit path
+  steps:
+  - intent: occasion_outfit
+  - action: action_occasion_outfit
+
+- story: fallback path
+  steps:
+  - intent: fallback
+  - action: action_fallback
+
+- story: interactive learning
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: outfit_suggestion
+  - action: action_outfit_suggestion
+  - intent: thank
+  - action: utter_thank
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: weather-based styling
+  steps:
+  - intent: weather_outfit
+  - action: action_weather_outfit
+  - intent: outfit_suggestion
+  - action: action_outfit_suggestion
+
+- story: style consultation
+  steps:
+  - intent: style_tips
+  - action: action_style_tips
+  - intent: color_matching
+  - action: action_color_matching
+  - intent: thank
+  - action: utter_thank 

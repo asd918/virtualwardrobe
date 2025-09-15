@@ -1,0 +1,37 @@
+# Tracker store - Where conversations are stored
+# https://rasa.com/docs/pro/build/configuring-assistant#tracker-store--where-conversations-are-stored
+tracker_store:
+  type: InMemoryTrackerStore
+
+# Action endpoint - Where custom code runs
+# https://rasa.com/docs/pro/build/configuring-assistant#action-endpoint--where-custom-code-runs
+action_endpoint:
+  url: "http://localhost:5055/webhook"
+
+# Model groups - LLM and embedding models
+# https://rasa.com/docs/pro/build/configuring-assistant#model-groups--llm-and-embedding-models
+model_groups:
+  openai_llm:
+    type: openai
+    model: gpt-3.5-turbo
+    temperature: 0.7
+    max_tokens: 1000
+  
+  openai_embeddings:
+    type: openai
+    model: text-embedding-ada-002
+
+# Lock store - Prevent processing conflicts
+# https://rasa.com/docs/pro/build/configuring-assistant#lock-stores--prevent-processing-conflicts
+lock_store:
+  type: InMemoryLockStore
+
+# NLG - Contextual Response Rephraser
+# https://rasa.com/docs/pro/build/configuring-assistant#contextual-response-rephraser--rephrase-responses-with-llms
+nlg:
+  type: rephrase
+
+# Silence handling - Timeout before triggering fallback
+# https://rasa.com/docs/pro/build/configuring-assistant#silence-handling--timeout-before-triggering-fallback
+interaction_handling:
+  global_silence_timeout: 7 

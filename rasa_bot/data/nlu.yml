@@ -1,0 +1,311 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - hey there
+    - hi there
+    - hello there
+    - good afternoon
+    - hey you
+    - hi you
+    - hello you
+    - good day
+    - good night
+    - hey fashionista
+    - hi stylist
+    - hello stylist
+    - hey style expert
+    - hi fashion expert
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you around
+    - see you later
+    - see ya
+    - bye bye
+    - good bye
+    - see you
+    - take care
+    - have a good day
+    - have a nice day
+    - talk to you later
+    - catch you later
+    - until next time
+    - farewell
+    - adios
+    - ciao
+    - au revoir
+    - see you tomorrow
+    - see you soon
+
+- intent: thank
+  examples: |
+    - thanks
+    - thank you
+    - thanks a lot
+    - thank you very much
+    - thanks so much
+    - thank you so much
+    - thanks a bunch
+    - thank you a lot
+    - thanks a million
+    - thank you a million
+    - thanks for your help
+    - thank you for your help
+    - thanks for the advice
+    - thank you for the advice
+    - thanks for the suggestions
+    - thank you for the suggestions
+    - thanks for the tips
+    - thank you for the tips
+    - thanks for everything
+    - thank you for everything
+
+- intent: outfit_suggestion
+  examples: |
+    - suggest an outfit
+    - what should I wear today
+    - help me choose an outfit
+    - what outfit should I wear
+    - suggest some clothes
+    - what clothes should I wear
+    - help me pick an outfit
+    - what to wear today
+    - outfit suggestion
+    - clothing suggestion
+    - what to put on
+    - help me dress
+    - what should I put on
+    - suggest a look
+    - what look should I go for
+    - help me style myself
+    - what style should I wear
+    - suggest a combination
+    - what combination should I wear
+    - help me coordinate my clothes
+
+- intent: weather_outfit
+  examples: |
+    - what to wear in the rain
+    - outfit for rainy weather
+    - what to wear when it's cold
+    - cold weather outfit
+    - what to wear in hot weather
+    - hot weather outfit
+    - what to wear in winter
+    - winter outfit
+    - what to wear in summer
+    - summer outfit
+    - what to wear in spring
+    - spring outfit
+    - what to wear in autumn
+    - autumn outfit
+    - what to wear in the snow
+    - snowy weather outfit
+    - what to wear when it's windy
+    - windy weather outfit
+    - what to wear in humid weather
+    - humid weather outfit
+    - weather appropriate outfit
+    - outfit for current weather
+    - what to wear based on weather
+    - weather-based clothing
+    - seasonal outfit
+
+- intent: casual_outfit
+  examples: |
+    - casual outfit
+    - what to wear casually
+    - casual clothes
+    - relaxed outfit
+    - comfortable outfit
+    - everyday outfit
+    - weekend outfit
+    - casual look
+    - relaxed look
+    - comfortable look
+    - everyday look
+    - weekend look
+    - casual style
+    - relaxed style
+    - comfortable style
+    - everyday style
+    - weekend style
+    - casual dressing
+    - relaxed dressing
+    - comfortable dressing
+    - everyday dressing
+    - weekend dressing
+    - something casual
+    - casual wear
+    - relaxed wear
+    - comfortable wear
+
+- intent: formal_outfit
+  examples: |
+    - formal outfit
+    - what to wear formally
+    - formal clothes
+    - business outfit
+    - professional outfit
+    - office outfit
+    - meeting outfit
+    - interview outfit
+    - formal look
+    - business look
+    - professional look
+    - office look
+    - meeting look
+    - interview look
+    - formal style
+    - business style
+    - professional style
+    - office style
+    - meeting style
+    - interview style
+    - formal dressing
+    - business dressing
+    - professional dressing
+    - office dressing
+    - meeting dressing
+    - interview dressing
+    - something formal
+    - formal wear
+    - business wear
+    - professional wear
+
+- intent: color_matching
+  examples: |
+    - what matches with red
+    - what colors go with blue
+    - color matching
+    - what colors work together
+    - color coordination
+    - what matches with green
+    - what colors go with yellow
+    - what matches with purple
+    - what colors go with orange
+    - what matches with pink
+    - what colors go with brown
+    - what matches with black
+    - what colors go with white
+    - what matches with gray
+    - what colors go with navy
+    - color harmony
+    - what colors complement each other
+    - what colors clash
+    - color wheel
+    - what colors are complementary
+    - what colors are analogous
+    - what colors are monochromatic
+    - color theory
+    - what matches with this color
+    - how to match colors
+    - color tips
+
+- intent: style_tips
+  examples: |
+    - style tips
+    - fashion advice
+    - styling tips
+    - fashion tips
+    - style advice
+    - styling advice
+    - fashion guidance
+    - style guidance
+    - styling guidance
+    - fashion help
+    - style help
+    - styling help
+    - fashion suggestions
+    - style suggestions
+    - styling suggestions
+    - fashion recommendations
+    - style recommendations
+    - styling recommendations
+    - fashion ideas
+    - style ideas
+    - styling ideas
+    - fashion inspiration
+    - style inspiration
+    - styling inspiration
+    - how to style
+    - how to dress
+    - fashion rules
+    - style rules
+    - styling rules
+    - fashion guidelines
+    - style guidelines
+    - styling guidelines
+
+- intent: occasion_outfit
+  examples: |
+    - outfit for a party
+    - what to wear to a wedding
+    - party outfit
+    - wedding outfit
+    - date outfit
+    - outfit for a date
+    - dinner outfit
+    - outfit for dinner
+    - work outfit
+    - outfit for work
+    - gym outfit
+    - outfit for the gym
+    - workout outfit
+    - outfit for working out
+    - beach outfit
+    - outfit for the beach
+    - vacation outfit
+    - outfit for vacation
+    - travel outfit
+    - outfit for travel
+    - school outfit
+    - outfit for school
+    - university outfit
+    - outfit for university
+    - college outfit
+    - outfit for college
+    - event outfit
+    - outfit for an event
+    - special occasion outfit
+    - outfit for a special occasion
+    - celebration outfit
+    - outfit for a celebration
+
+- intent: fallback
+  examples: |
+    - I don't understand
+    - what do you mean
+    - I'm confused
+    - can you explain
+    - I need help
+    - help me
+    - I'm lost
+    - what are you talking about
+    - I don't get it
+    - can you clarify
+    - I need clarification
+    - what are you saying
+    - I don't follow
+    - can you repeat that
+    - I didn't catch that
+    - what was that
+    - can you help me
+    - I need assistance
+    - I'm stuck
+    - what should I do
+    - I don't know what to do
+    - can you guide me
+    - I need direction
+    - what's next
+    - how does this work 

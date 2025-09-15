@@ -84,7 +84,7 @@ class ClothingItemForm(forms.ModelForm):
         model = ClothingItem
         fields = [
             'name', 'category', 'color', 'season', 'fit',
-            'fabric_type', 'occasions', 'image', 'notes',
+            'fabric_type', 'occasions', 'image_front', 'image_back', 'notes',
             'purchase_date', 'brand', 'color_palette', 'style_embedding', 'features'
         ]
         
@@ -139,7 +139,11 @@ class ClothingItemForm(forms.ModelForm):
                 'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
                 'placeholder': 'Enter fabric type'
             }),
-            'image': forms.FileInput(attrs={
+            'image_front': forms.FileInput(attrs={
+                'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                'accept': 'image/*'
+            }),
+            'image_back': forms.FileInput(attrs={
                 'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
                 'accept': 'image/*'
             }),

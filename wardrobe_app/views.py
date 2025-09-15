@@ -32,6 +32,7 @@ from . import tasks
 from .ai_utils import calculate_trend_score, get_style_embedding
 from collections import Counter
 from datetime import datetime
+from .recommendation_engine import get_rule_based_recommendations
 
 logger = logging.getLogger(__name__)
 
@@ -235,9 +236,9 @@ def add_item(request):
                 
                 try:
                     # Process image synchronously instead of using Celery
-                    if item.image:
+                    if item.image_front:
                         # Extract features and classify style
-                        img = preprocess_image(item.image.path)
+                        img = preprocess_image(item.image_front.path)
                         features = extract_features(img)
                         style = classify_style(features)
                         
@@ -281,12 +282,12 @@ def edit_item(request, item_id):
         if form.is_valid():
             item = form.save()
             
-            # If image was changed, trigger reprocessing
-            if 'image' in form.changed_data:
+            # If front image was changed, trigger reprocessing
+            if 'image_front' in form.changed_data:
                 try:
-                    if item.image:
+                    if item.image_front:
                         # Process image synchronously
-                        img = preprocess_image(item.image.path)
+                        img = preprocess_image(item.image_front.path)
                         features = extract_features(img)
                         style = classify_style(features)
                         color_palette = generate_color_palette(img)
@@ -447,7 +448,7 @@ def outfit_create(request):
         if form.fields['items'].queryset:
             item_choices = []
             for item in form.fields['items'].queryset:
-                image_url = item.image.url if item.image else ''
+                image_url = item.image_front.url if getattr(item, 'image_front', None) else ''
                 item_choices.append((item.id, item.name, image_url))
             
             # Update widget choices with the same item data
@@ -584,85 +585,63 @@ def wardrobe_view(request):
     return render(request, 'wardrobe_app/wardrobe.html', context)
 
 # Weather integration
+def get_geocode(city):
+	"""
+	Deprecated: Geocoding not required for Visual Crossing timeline endpoint.
+	Return None to indicate no geocode step.
+	"""
+	return None
+
+def get_weather_data(city_input, units='metric'):
+	"""
+	Wrapper for Visual Crossing util function.
+	"""
+	from .weather_utils import get_weather_data as vc_get_weather
+	return vc_get_weather(city_input, units=units)
+
 @login_required
 def weather_dashboard(request):
-    city = request.GET.get('city', 'Kuala Lumpur')
-    city_id = request.GET.get('id')
-    units = request.GET.get('units', 'metric')
-    
-    # Use city ID if provided, otherwise use city name
-    city_input = city_id if city_id else city
-    
-    # Validate units parameter
-    if units not in ['metric', 'imperial']:
-        units = 'metric'  # Default to metric if invalid
-    
-    # Check API key status
-    api_key = settings.OPENWEATHERMAP_API_KEY
-    using_default_key = not api_key or api_key == '1234567890abcdef1234567890abcdef'  # Only check for the old default key
-        
-    weather_data = get_weather_data(city_input, units=units)
-    
-    # Initialize context with basic information
-    context = {
-        'city': city,
-        'city_id': city_id,
-        'units': units,
-        'using_default_key': using_default_key,
-        'search_method': 'id' if city_id else 'name',
-    }
-
-    # Handle case when weather data couldn't be retrieved
-    if weather_data is None:
-        messages.error(request, f"Unable to fetch weather data for {city_input}. Please try again later.")
-        return render(request, 'wardrobe_app/weather_dashboard.html', context)
-
-    # Handle error response from the weather API
-    if isinstance(weather_data, dict) and 'error' in weather_data:
-        messages.error(request, weather_data['error'])
-        return render(request, 'wardrobe_app/weather_dashboard.html', context)
-
-    # Get clothing recommendations based on weather
-    recommendations = get_clothing_recommendations_based_on_weather(weather_data)
-
-    # Get suggested outfits based on weather data
-    suggested_outfits = []
-    if weather_data and 'temperature' in weather_data:
-        current_temp = weather_data['temperature']
-        # Convert to Celsius for DB queries if using imperial
-        if units == 'imperial':
-            # Convert Fahrenheit to Celsius for DB comparison
-            current_temp = (current_temp - 32) * 5/9
-            
-        # Find outfits suitable for current temperature (within the range)
-        suggested_outfits = Outfit.objects.filter(
-            user=request.user,
-            suggested_temperature_min__lte=current_temp,
-            suggested_temperature_max__gte=current_temp
-        ).prefetch_related('items')
-
-    # If no temperature-based outfits are found, get some general recommendations
-    if not suggested_outfits:
-        # Get up to 3 recent outfits as fallback suggestions
-        suggested_outfits = Outfit.objects.filter(
-            user=request.user
-        ).order_by('-created_at')[:3]
-
-    # Update context with weather data
-    context.update({
-        'weather_data': weather_data,
-        'coordinates': weather_data.get('coordinates', {}),
-        'suggested_outfits': suggested_outfits,
-        'recommendations': recommendations,
-    })
-    
-    # Add a friendly message if the city was found using ID
-    if city_id and weather_data and 'city' in weather_data:
-        city_name_from_id = weather_data['city']
-        if city_name_from_id and not city_name_from_id.startswith("City ID:"):
-            messages.success(request, f"Successfully found weather for {city_name_from_id} using City ID: {city_id}")
-    
-    return render(request, 'wardrobe_app/weather_dashboard.html', context)
+	city = request.GET.get('city', 'Kuala Lumpur')
+	units = request.GET.get('units', 'metric')
+	
+	weather_data = get_weather_data(city, units=units)
+	
+	context = {
+		'city': city,
+		'units': units,
+	}
+	
+	if weather_data is None or (isinstance(weather_data, dict) and 'error' in weather_data):
+		error_msg = weather_data.get('error') if isinstance(weather_data, dict) else 'Unable to fetch weather data.'
+		messages.error(request, error_msg)
+		return render(request, 'wardrobe_app/weather_dashboard.html', context)
+	
+	recommendations = get_clothing_recommendations_based_on_weather(weather_data)
+	
+	# Suggested outfits by temperature (convert to Celsius if imperial requested)
+	suggested_outfits = []
+	if weather_data and weather_data.get('temperature') is not None:
+		current_temp_c = weather_data['temperature']
+		if units == 'imperial':
+			current_temp_c = (current_temp_c - 32) * 5/9
+		
+		suggested_outfits = Outfit.objects.filter(
+			user=request.user,
+			suggested_temperature_min__lte=current_temp_c,
+			suggested_temperature_max__gte=current_temp_c
+		).prefetch_related('items')
+	
+	if not suggested_outfits:
+		suggested_outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')[:3]
+	
+	context.update({
+		'weather_data': weather_data,
+		'coordinates': weather_data.get('coordinates', {}),
+		'suggested_outfits': suggested_outfits,
+		'recommendations': recommendations,
+	})
+	
+	return render(request, 'wardrobe_app/weather_dashboard.html', context)
 
 # API views
 @api_view(['GET'])
@@ -718,86 +697,44 @@ def api_outfit_list(request):
 
 @api_view(['GET'])
 def api_weather(request):
-    """API endpoint to fetch weather data for a given city or city ID."""
-    city = request.query_params.get('city', 'Kuala Lumpur')
-    city_id = request.query_params.get('id')
-    units = request.query_params.get('units', 'metric')
-    
-    # Use city ID if provided, otherwise use city name
-    city_input = city_id if city_id else city
-    search_method = 'id' if city_id else 'name'
-    
-    # Validate input parameter
-    if not city_input or len(str(city_input).strip()) == 0:
-        return Response({"error": "City parameter or ID is required"}, status=400)
-    
-    # Validate units parameter
-    if units not in ['metric', 'imperial']:
-        units = 'metric'  # Default to metric if invalid
-    
-    # Sanitize city name to prevent injection (not needed for city ID)
-    if not city_id:
-        city_input = city_input.strip()
-    
-    # Add debug logging
-    logger.info(f"Weather API request for: {city_input}, units: {units}, method: {search_method}")
-    
-    try:
-        weather_data = get_weather_data(city_input, units=units)
-        
-        # Check if weather data is None (API call failed)
-        if weather_data is None:
-            logger.warning(f"Unable to fetch weather data for {city_input}")
-            return Response({
-                "error": f"Unable to fetch weather data for {city_input}. Please check the city name or ID and try again.",
-                "weather": None,
-                "recommendations": {},
-                "message": ""
-            }, status=200)  # Use 200 to ensure the AJAX call completes
-            
-        # Check if weather data contains an error
-        if isinstance(weather_data, dict) and 'error' in weather_data:
-            logger.warning(f"Weather API error for {city_input}: {weather_data['error']}")
-            return Response({
-                "error": weather_data['error'],
-                "weather": None,
-                "recommendations": {},
-                "message": ""
-            }, status=200)  # Use 200 to ensure the AJAX call completes
-        
-        # Get clothing recommendations
-        recommendations = get_clothing_recommendations_based_on_weather(weather_data)
-        
-        # Create response message
-        success_message = ""
-        if search_method == 'name':
-            success_message = f"Weather data retrieved for {weather_data.get('city', city)}."
-            # Add info about found city ID
-            if weather_data.get('city_id'):
-                success_message += f" For more accurate results in the future, use City ID: {weather_data.get('city_id')}."
-        else:
-            success_message = f"Weather data retrieved using City ID: {city_id} ({weather_data.get('city', 'Unknown location')})."
-        
-        # Combine weather data with recommendations
-        response_data = {
-            'weather': weather_data,
-            'recommendations': recommendations.get('recommendations', {}),
-            'message': success_message or recommendations.get('message', '')
-        }
-        
-        # Debug log the response
-        logger.info(f"Weather API success for {city_input}")
-        
-        return Response(response_data)
-    except Exception as e:
-        # Log any exceptions
-        logger.error(f"Exception in weather API for {city_input}: {str(e)}")
-        return Response({
-            "error": f"An error occurred while processing your request: {str(e)}",
-            "weather": None,
-            "recommendations": {},
-            "message": ""
-        }, status=200)  # Use 200 to ensure the AJAX call completes
+	"""API endpoint to fetch weather data for a given city."""
+	city = request.query_params.get('city', 'Kuala Lumpur')
+	units = request.query_params.get('units', 'metric')
+	
+	if not city or len(str(city).strip()) == 0:
+		return Response({"error": "City parameter is required"}, status=400)
+	
+	logger.info(f"Weather API request for: {city}, units: {units}")
+	try:
+		weather_data = get_weather_data(city, units=units)
+		if weather_data is None:
+			logger.warning(f"Unable to fetch weather data for {city}")
+			return Response({
+				"error": f"Unable to fetch weather data for {city}. Please check the city name and try again.",
+				"weather": None,
+				"recommendations": {},
+				"message": ""
+			}, status=200)
+		
+		if isinstance(weather_data, dict) and 'error' in weather_data:
+			logger.warning(f"Weather API error for {city}: {weather_data['error']}")
+			return Response({
+				"error": weather_data['error'],
+				"weather": None,
+				"recommendations": {},
+				"message": ""
+			}, status=200)
+		
+		recommendations = get_clothing_recommendations_based_on_weather(weather_data)
+		response_data = {
+			'weather': weather_data,
+			'recommendations': recommendations.get('recommendations', {}),
+			'message': f"Weather data retrieved for {weather_data.get('city', city)}."
+		}
+		return Response(response_data, status=200)
+	except Exception as e:
+		logger.error(f"Error in weather API: {e}")
+		return Response({"error": str(e)}, status=500)
 
 @api_view(['POST'])
 @login_required
@@ -939,198 +876,6 @@ def calculate_occasion_appropriateness(items, occasion):
     return sum(scores) / len(scores) if scores else 0
 
 # Helper functions
-def get_geocode(city):
-    """
-    Convert city name to coordinates using OpenWeatherMap Geocoding API.
-    
-    Args:
-        city (str): City name to geocode (not a city ID)
-        
-    Returns:
-        dict: Dictionary with lat and lon coordinates, or None if geocoding fails
-    """
-    # Skip geocoding if input is likely a city ID
-    if city.isdigit():
-        logger.info(f"Skipping geocoding for numeric input (likely a city ID): {city}")
-        return None
-        
-    api_key = settings.OPENWEATHERMAP_API_KEY
-    if not api_key:
-        logger.error("OpenWeatherMap API key not configured")
-        return None
-
-    # Use the geocoding API endpoint as per OpenWeatherMap documentation
-    url = f"http://api.openweathermap.org/geo/1.0/direct?q={city}&limit=1&appid={api_key}"
-    logger.info(f"Geocoding URL: {url.replace(api_key, 'API_KEY')}")
-
-    try:
-        response = requests.get(url, timeout=10)
-        status = response.status_code
-        logger.info(f"Geocoding API response status: {status}")
-        
-        if status != 200:
-            logger.error(f"Geocoding API error: Status code {status}, Response: {response.text}")
-            return None
-            
-        response.raise_for_status()
-        
-        data = response.json()
-        logger.info(f"Geocoding API response received: {data}")
-        
-        # Check if we got valid results
-        if not data or not isinstance(data, list) or len(data) == 0:
-            logger.warning(f"No geocoding results for city: {city}")
-            return None
-        
-        # Extract coordinates
-        location = data[0]
-        lat = location.get('lat')
-        lon = location.get('lon')
-        
-        if lat is None or lon is None:
-            logger.warning(f"Missing coordinates in geocoding response for {city}")
-            return None
-        
-        result = {
-            'lat': lat,
-            'lon': lon,
-            'name': location.get('name', city),
-            'country': location.get('country', ''),
-            'state': location.get('state', '')
-        }
-        
-        logger.info(f"Geocoding successful: {result}")
-        return result
-        
-    except requests.exceptions.Timeout:
-        logger.error(f"Timeout connecting to geocoding API for city: {city}")
-        return None
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error during geocoding request: {e}")
-        return None
-    except Exception as e:
-        logger.error(f"Unexpected error in geocoding: {e}")
-        return None
-
-def get_weather_data(city_input, units='metric'):
-    """
-    Fetch current weather data using OpenWeatherMap API.
-    Supports searching by city name or city ID.
-    
-    Args:
-        city_input (str): City name or city ID to get weather for
-        units (str): Units for temperature ('metric' or 'imperial')
-        
-    Returns:
-        dict: Weather data including temperature, conditions, etc.
-              Returns None if API call fails
-    """
-    api_key = settings.OPENWEATHERMAP_API_KEY
-    if not api_key:
-        logger.error("OpenWeatherMap API key not configured")
-        return None
-        
-    logger.info(f"Using API key: {api_key[:4]}...{api_key[-4:]} (masked)")
-
-    try:
-        # Check if the input might be a city ID (numeric)
-        is_city_id = city_input.isdigit()
-        
-        if is_city_id:
-            logger.info(f"Using city ID lookup: {city_input}")
-            # Direct API call using city ID (most accurate)
-            url = f"https://api.openweathermap.org/data/2.5/weather?id={city_input}&units={units}&appid={api_key}"
-            formatted_location = f"City ID: {city_input}"  # Will be updated from API response
-        else:
-            # Step 1: Get coordinates using geocoding API
-            logger.info(f"Attempting to geocode city: {city_input}")
-            geocode_data = get_geocode(city_input)
-            
-            # Step 2: Fetch weather data
-            if geocode_data:
-                # Use coordinates for more accurate results
-                lat = geocode_data['lat']
-                lon = geocode_data['lon']
-                url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&units={units}&appid={api_key}"
-                formatted_location = geocode_data['name']
-                
-                # Add country and state if available
-                if geocode_data.get('state'):
-                    formatted_location += f", {geocode_data['state']}"
-                if geocode_data.get('country'):
-                    formatted_location += f", {geocode_data['country']}"
-                    
-                logger.info(f"Using coordinates for weather: lat={lat}, lon={lon}")
-            else:
-                # Fallback to direct city name search
-                url = f"https://api.openweathermap.org/data/2.5/weather?q={city_input}&units={units}&appid={api_key}"
-                formatted_location = city_input
-                logger.info(f"Falling back to direct city search: {city_input}")
-        
-        # Make the weather API request
-        logger.info(f"Making request to: {url.replace(api_key, 'API_KEY')}")
-        response = requests.get(url, timeout=10)
-        status = response.status_code
-        logger.info(f"Weather API response status: {status}")
-        
-        if status != 200:
-            logger.error(f"Weather API error: Status code {status}, Response: {response.text}")
-            return None
-            
-        response.raise_for_status()
-        
-        data = response.json()
-        logger.info(f"Weather API response received with {len(data)} keys")
-        
-        # Validate response data structure
-        if 'main' not in data or 'weather' not in data or not data['weather']:
-            logger.error(f"Invalid weather data format for {city_input}: {data}")
-            return None
-        
-        # Update formatted location with actual city name from API response if using city ID
-        if is_city_id and 'name' in data:
-            city_name = data.get('name', formatted_location)
-            country = data.get('sys', {}).get('country', '')
-            formatted_location = f"{city_name}"
-            if country:
-                formatted_location += f", {country}"
-        
-        # Format weather data for application use
-        weather_data = {
-            'temperature': data['main'].get('temp'),
-            'feels_like': data['main'].get('feels_like'),
-            'humidity': data['main'].get('humidity'),
-            'pressure': data['main'].get('pressure'),
-            'description': data['weather'][0].get('description'),
-            'icon': data['weather'][0].get('icon'),
-            'main': data['weather'][0].get('main'),
-            'city': formatted_location,
-            'city_id': data.get('id'),  # Include city ID for future reference
-            'country': data.get('sys', {}).get('country', ''),
-            'wind_speed': data.get('wind', {}).get('speed'),
-            'coordinates': {
-                'lat': data.get('coord', {}).get('lat'),
-                'lon': data.get('coord', {}).get('lon')
-            },
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        
-        logger.info(f"Weather data formatted successfully for {formatted_location}")
-        return weather_data
-        
-    except requests.exceptions.Timeout:
-        logger.error(f"Timeout connecting to weather API for city: {city_input}")
-        return None
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error fetching weather data: {e}")
-        return None
-    except (KeyError, ValueError, TypeError) as e:
-        logger.error(f"Error processing weather data: {e}")
-        return None
-    except Exception as e:
-        logger.error(f"Unexpected error in weather data retrieval: {e}")
-        return None
-
 def populate_categories(request):
     """Populate initial clothing categories."""
     if not request.user.is_superuser:
@@ -1277,13 +1022,18 @@ def trend_report(request):
 def smart_recommender(request):
     # Get weather data
     try:
-        weather_data = get_weather_data(request.user.userprofile.location)
+        # Try to get user's location from profile, default to Kuala Lumpur
+        user_location = getattr(request.user.userprofile, 'location', 'Kuala Lumpur') if hasattr(request.user, 'userprofile') else 'Kuala Lumpur'
+        weather_data = get_weather_data(user_location)
     except Exception as e:
         logger.error(f"Error getting weather data: {e}")
         weather_data = None
 
     # Get user's clothing items
-    user_items = ClothingItem.objects.filter(user=request.user)
+    user_items = ClothingItem.objects.filter(
+        user=request.user,
+        processing_status='completed'  # Only use processed items
+    ).select_related('category')
     
     # Initialize data structures
     recommended_outfits = []
@@ -1296,6 +1046,18 @@ def smart_recommender(request):
     weather_condition = None
 
     if user_items.exists():
+        # Get outfit recommendations using the recommendation engine
+        try:
+            outfits = get_rule_based_recommendations(
+                user_id=request.user.id, 
+                max_outfits=12,
+                weather_data=weather_data
+            )
+            recommended_outfits = outfits
+        except Exception as e:
+            logger.error(f"Error getting recommendations: {e}")
+            recommended_outfits = []
+
         # Analyze current weather conditions
         weather_appropriate_items = []
         if weather_data and 'main' in weather_data and 'weather' in weather_data and weather_data['weather']:
@@ -1364,38 +1126,6 @@ def smart_recommender(request):
             }
         ]
 
-        # Generate outfit recommendations
-        if weather_appropriate_items:
-            # Group items by category
-            items_by_category = {}
-            for item in weather_appropriate_items:
-                if item.category:
-                    category = item.category.name
-                    if category not in items_by_category:
-                        items_by_category[category] = []
-                    items_by_category[category].append(item)
-
-            # Create outfit combinations
-            outfit_combinations = []
-            if 'tops' in items_by_category and 'bottoms' in items_by_category:
-                for top in items_by_category['tops'][:3]:  # Limit to 3 tops
-                    for bottom in items_by_category['bottoms'][:2]:  # Limit to 2 bottoms
-                        outfit = {
-                            'name': f"{top.style or 'Casual'} Outfit",
-                            'items': [top, bottom],
-                            'score': calculate_trend_compatibility_score(top) * 100,
-                            'recommendation_reason': (
-                                f"Perfect for {weather_data['weather'][0]['description']} weather"
-                                if weather_data and 'weather' in weather_data and weather_data['weather']
-                                else "Stylish combination"
-                            )
-                        }
-                        outfit_combinations.append(outfit)
-
-            # Sort by score and get top 3
-            outfit_combinations.sort(key=lambda x: x['score'], reverse=True)
-            recommended_outfits = outfit_combinations[:3]
-
         # Generate personalized suggestions
         suggestions = [
             {
@@ -1424,3 +1154,40 @@ def smart_recommender(request):
     }
     
     return render(request, 'wardrobe_app/smart_recommender.html', context)
+
+@login_required
+def get_recommendations_api(request):
+    """
+    API endpoint to get outfit recommendations as JSON.
+    Used for AJAX requests to refresh recommendations dynamically.
+    """
+    try:
+        max_outfits = int(request.GET.get('max_outfits', 12))
+        max_outfits = min(max_outfits, 20)  # Limit to prevent abuse
+        
+        # Get weather data for filtering
+        weather_data = None
+        try:
+            user_location = getattr(request.user.userprofile, 'location', 'Kuala Lumpur') if hasattr(request.user, 'userprofile') else 'Kuala Lumpur'
+            weather_data = get_weather_data(user_location)
+        except Exception as e:
+            logger.error(f"Error getting weather data for API: {e}")
+        
+        recommendations = get_rule_based_recommendations(
+            user_id=request.user.id,
+            max_outfits=max_outfits,
+            weather_data=weather_data
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'recommendations': recommendations,
+            'total_generated': len(recommendations)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting recommendations for user {request.user.id}: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

@@ -48,6 +48,7 @@ urlpatterns = [
     path('api/outfits/', views.api_outfit_list, name='api_outfit_list'),
     path('api/outfits/suggestions/', views.get_outfit_suggestions, name='api_outfit_suggestions'),
     path('api/weather/', views.api_weather, name='api_weather'),
+    path('api/recommendations/', views.get_recommendations_api, name='api_recommendations'),
     # Smart Recommender and Trend Report
     path('recommender/', views.smart_recommender, name='smart_recommender'),
     path('trends/', views.trend_report, name='trend_report'),

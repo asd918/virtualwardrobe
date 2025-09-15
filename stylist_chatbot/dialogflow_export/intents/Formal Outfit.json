@@ -1,0 +1,30 @@
+{
+  "name": "Formal Outfit",
+  "auto": true,
+  "userSays": [
+    {"data": [{"text": "formal outfit"}], "isTemplate": false},
+    {"data": [{"text": "office outfit"}], "isTemplate": false},
+    {"data": [{"text": "interview outfit"}], "isTemplate": false}
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "Formal idea: blazer + dress shirt + tailored pants + dress shoes."
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "fallbackIntent": false
+}
+
+

@@ -1,0 +1,31 @@
+{
+  "name": "Weather Outfit",
+  "auto": true,
+  "userSays": [
+    {"data": [{"text": "what to wear in the rain"}], "isTemplate": false},
+    {"data": [{"text": "outfit for hot weather"}], "isTemplate": false},
+    {"data": [{"text": "cold weather outfit"}], "isTemplate": false},
+    {"data": [{"text": "what to wear when it’s windy"}], "isTemplate": false}
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "For rain: waterproof jacket, closed shoes, darker colors. Want another option?"
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "fallbackIntent": false
+}
+
+

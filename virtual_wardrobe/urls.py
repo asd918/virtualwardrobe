@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(('wardrobe_app.urls', 'wardrobe'), namespace='wardrobe')),
+    path('stylist-chat/', include(('stylist_chatbot.urls', 'stylist_chatbot'), namespace='stylist_chatbot')),
 ]
 
 # Add media files serving in development

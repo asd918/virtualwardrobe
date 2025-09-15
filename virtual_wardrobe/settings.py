@@ -1,13 +1,15 @@
 import os
-import os
 from pathlib import Path
-import dj_database_url
+from dotenv import load_dotenv
 
 
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env at project root if present
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-secret-key-here')
@@ -32,6 +34,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'wardrobe_app.apps.WardrobeConfig',
+    'stylist_chatbot',
 ]
 
 MIDDLEWARE = [
@@ -72,8 +75,6 @@ DATABASES = {
     }
 }
 
-DATABASES['default'] = dj_database_url.config(conn_max_age=600)
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -99,8 +100,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (User uploaded files)
 MEDIA_URL = '/media/'
@@ -119,12 +119,8 @@ REST_FRAMEWORK = {
     ]
 }
 
-# Weather API Configuration - Load from environment variable
-OPENWEATHERMAP_API_KEY = os.getenv('OPENWEATHERMAP_API_KEY', 'e6a961a0a2d698a76c0569e17b8014d9')  # User provided API key
-if not OPENWEATHERMAP_API_KEY and not DEBUG: # Require API key in production
-     raise ValueError("OPENWEATHERMAP_API_KEY environment variable not set.")
-elif OPENWEATHERMAP_API_KEY == 'e6a961a0a2d698a76c0569e17b8014d9':
-     print("Using directly configured OpenWeatherMap API key.")
+# Weather API Configuration - Visual Crossing
+VISUAL_CROSSING_API_KEY = 'WBQUPCXJM6ZN7J4G5T9V6BAWU'
 
 
 # Logging configuration

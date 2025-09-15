@@ -56,6 +56,69 @@ python manage.py runserver
 
 8. Access the application at http://127.0.0.1:8000/
 
+## Dialogflow Chatbot Integration
+
+This project integrates Google Dialogflow (ES) as the chatbot backend for the AI Stylist.
+
+### Prerequisites
+
+- Install dependency (already in requirements.txt):
+  - `google-cloud-dialogflow`
+- Service account JSON credentials for your Dialogflow project.
+- Project ID: `virtualwardrobe-eqqa`
+
+### Environment
+
+Set the Google credentials environment variable before running Django.
+
+- PowerShell (Windows):
+```
+set GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\dialogflow-key.json"
+```
+
+- Bash:
+```
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/dialogflow-key.json"
+```
+
+### Backend Endpoints
+
+- Chat message API used by the UI:
+  - `POST /stylist-chat/api/message/` with JSON `{ "message": "..." }`
+- Simple external endpoint:
+  - `GET /stylist-chat/chatbot-response?message=hello`
+
+### Where the code lives
+
+- Dialogflow client: `stylist_chatbot/dialogflow_client.py`
+- Views and intent mapping: `stylist_chatbot/views.py`
+- URLs: `stylist_chatbot/urls.py`
+- Chat UI: `stylist_chatbot/templates/stylist_chatbot/chat_interface.html`
+
+### Import ready-made Dialogflow agent
+
+We provide an export you can import directly:
+
+- Folder: `stylist_chatbot/dialogflow_export/`
+  - `agent.json`
+  - `intents/*.json` (Welcome, Outfit Recommendation, Weather Outfit, Color Matching, Casual Outfit, Formal Outfit, Goodbye)
+
+Steps:
+1) Zip the contents of `stylist_chatbot/dialogflow_export/` (include `agent.json` and the `intents` folder).
+2) Dialogflow ES Console → your agent → Settings (gear) → Export and Import → Import from ZIP.
+
+### Testing
+
+Run unit tests:
+```
+python manage.py test stylist_chatbot -v 2
+```
+
+Quick endpoint check:
+```
+http://localhost:8000/stylist-chat/chatbot-response?message=hello
+```
+
 ## Project Structure
 
 - `wardrobe_app/` - Main application directory

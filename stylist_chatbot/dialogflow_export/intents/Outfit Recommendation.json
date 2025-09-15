@@ -1,0 +1,32 @@
+{
+  "name": "Outfit Recommendation",
+  "auto": true,
+  "userSays": [
+    {"data": [{"text": "suggest an outfit"}], "isTemplate": false},
+    {"data": [{"text": "what should I wear today"}], "isTemplate": false},
+    {"data": [{"text": "help me choose an outfit"}], "isTemplate": false},
+    {"data": [{"text": "outfit for a party"}], "isTemplate": false},
+    {"data": [{"text": "give me a formal outfit idea"}], "isTemplate": false}
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "Here’s a look: smart top + chinos + clean sneakers. Want casual, formal, or weather-based advice?"
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "fallbackIntent": false
+}
+
+

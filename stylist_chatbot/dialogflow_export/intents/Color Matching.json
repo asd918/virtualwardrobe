@@ -1,0 +1,30 @@
+{
+  "name": "Color Matching",
+  "auto": true,
+  "userSays": [
+    {"data": [{"text": "what matches with red"}], "isTemplate": false},
+    {"data": [{"text": "colors that go with blue"}], "isTemplate": false},
+    {"data": [{"text": "how to match colors"}], "isTemplate": false}
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "Try complementary or neutral pairings. For red: navy, white, charcoal, or denim."
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "fallbackIntent": false
+}
+
+

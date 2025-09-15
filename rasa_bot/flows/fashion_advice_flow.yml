@@ -1,0 +1,26 @@
+version: "3.1"
+
+flows:
+  - name: fashion_advice_flow
+    description: "Provide fashion advice and outfit suggestions"
+    steps:
+      - user: outfit_suggestion
+      - bot: action_outfit_suggestion
+      
+      - user: weather_outfit
+      - bot: action_weather_outfit
+      
+      - user: casual_outfit
+      - bot: action_casual_outfit
+      
+      - user: formal_outfit
+      - bot: action_formal_outfit
+      
+      - user: color_matching
+      - bot: action_color_matching
+      
+      - user: style_tips
+      - bot: action_style_tips
+      
+      - user: occasion_outfit
+      - bot: action_occasion_outfit

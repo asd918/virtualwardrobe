@@ -1,0 +1,31 @@
+{
+  "name": "Goodbye",
+  "auto": true,
+  "userSays": [
+    {"data": [{"text": "thanks"}], "isTemplate": false},
+    {"data": [{"text": "thank you"}], "isTemplate": false},
+    {"data": [{"text": "bye"}], "isTemplate": false},
+    {"data": [{"text": "goodbye"}], "isTemplate": false}
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "You’re welcome! Come back anytime for more styling help."
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "fallbackIntent": false
+}
+
+

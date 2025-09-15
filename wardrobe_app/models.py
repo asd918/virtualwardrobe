@@ -71,6 +71,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
+def today():
+        return timezone.now().date()
+
 class ClothingItem(models.Model):
     """Represents a single clothing item in the wardrobe."""
     SEASON_CHOICES = [
@@ -145,11 +148,12 @@ class ClothingItem(models.Model):
         ]
     )
     category = models.ForeignKey(
-        ClothingCategory,
+        'ClothingCategory',
         on_delete=models.SET_NULL,
         null=True,
         db_index=True
     )
+
     color = models.CharField(
         max_length=50,
         validators=[
@@ -169,8 +173,19 @@ class ClothingItem(models.Model):
     fabric_type = models.CharField(max_length=50, blank=True)
     occasions = models.JSONField(default=list)
 
-    # Image upload with validation
-    image = models.ImageField(
+    # Image uploads with validation (front and back views)
+    image_front = models.ImageField(
+        upload_to='wardrobe_items/',
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['jpg', 'jpeg', 'png', 'gif'],
+                message="Only .jpg, .jpeg, .png, and .gif files are allowed."
+            )
+        ]
+    )
+    image_back = models.ImageField(
         upload_to='wardrobe_items/',
         null=True,
         blank=True,
@@ -204,13 +219,15 @@ class ClothingItem(models.Model):
     )
     processing_error = models.TextField(blank=True)
 
+    
+
     # Metadata fields
     purchase_date = models.DateField(
         null=True, 
         blank=True,
         validators=[
             MaxValueValidator(
-                limit_value=timezone.now().date,
+                limit_value=today,
                 message="Purchase date cannot be in the future."
             )
         ]

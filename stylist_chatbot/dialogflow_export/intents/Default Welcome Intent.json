@@ -1,0 +1,30 @@
+{
+  "name": "Default Welcome Intent",
+  "auto": true,
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "0",
+          "lang": "en",
+          "speech": [
+            "Hello! I’m your AI Stylist. Ask me for outfit ideas, weather tips, or styling advice."
+          ]
+        }
+      ]
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "events": [
+    {
+      "name": "WELCOME"
+    }
+  ],
+  "fallbackIntent": false
+}
+
+

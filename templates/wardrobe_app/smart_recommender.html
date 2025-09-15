@@ -4,163 +4,146 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-magic me-2"></i>Smart Wardrobe Recommender</h4>
-                </div>
-                <div class="card-body">
-                    <p class="lead">Welcome to your personalized fashion assistant! Here you'll find outfit recommendations based on your style, the weather, and current trends.</p>
-                    
-                    {% if weather_data %}
-                    <div class="alert alert-info">
-                        <div class="d-flex align-items-center">
-                            {% if weather_data.weather.0.icon %}
-                            <img src="https://openweathermap.org/img/wn/{{ weather_data.weather.0.icon }}@2x.png" alt="Weather icon" style="width: 50px;">
-                            {% endif %}
-                            <div class="ms-3">
-                                <h5 class="alert-heading mb-1">Current Weather: {{ weather_data.weather.0.main }}</h5>
-                                <p class="mb-0">{{ weather_data.main.temp }}°C in {{ weather_data.name }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card shadow-sm">
+				<div class="card-header bg-primary text-white">
+					<h4 class="mb-0"><i class="fas fa-magic me-2"></i>Smart Wardrobe Recommender</h4>
+				</div>
+				<div class="card-body">
+					<p class="lead">Welcome to your personalized fashion assistant! Here you'll find outfit recommendations based on your style, the weather, and current trends.</p>
+					
+					{% if weather_data %}
+					<div class="alert alert-info">
+						<div class="d-flex align-items-center">
+							<div class="ms-3">
+								<h5 class="alert-heading mb-1">Current Weather</h5>
+								<p class="mb-0">
+									{% if weather_data.temperature %}{{ weather_data.temperature }}°C{% endif %}
+									{% if weather_data.city %}in {{ weather_data.city }}{% endif %}
+									{% if weather_data.description %}- {{ weather_data.description }}{% endif %}
+								</p>
+							</div>
+						</div>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <!-- Recommended Outfits Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-tshirt me-2"></i>Recommended Outfits</h5>
-                </div>
-                <div class="card-body">
-                    {% if recommended_outfits %}
-                        <div class="row">
-                            {% for outfit in recommended_outfits %}
-                                <div class="col-md-4 mb-4">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ outfit.name }}</h5>
-                                            <p class="card-text"><small class="text-muted">{{ outfit.recommendation_reason }}</small></p>
-                                            <div class="d-flex mb-3">
-                                                <div class="me-2">Score:</div>
-                                                <div class="progress flex-grow-1" style="height: 20px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: {{ outfit.score }}%" aria-valuenow="{{ outfit.score }}" aria-valuemin="0" aria-valuemax="100">{{ outfit.score }}%</div>
-                                                </div>
-                                            </div>
-                                            <h6>Items:</h6>
-                                            <ul class="list-group list-group-flush">
-                                                {% for item in outfit.items %}
-                                                    <li class="list-group-item px-0">
-                                                        <a href="{% url 'wardrobe:item_detail' item_id=item.id %}">{{ item.name }}</a>
-                                                        {% if item.color %}
-                                                            <span class="ms-2 badge" style="background-color: {{ item.color }};">&nbsp;</span>
-                                                        {% endif %}
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="alert alert-warning">
-                            <p class="mb-0">No outfit recommendations available. Try adding more items to your wardrobe!</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- Recommended Outfits Section -->
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="card shadow-sm">
+				<div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+					<h5 class="mb-0"><i class="fas fa-tshirt me-2"></i>Recommended Outfits</h5>
+					<button id="generateRecommendationsBtn" class="btn btn-light btn-sm">
+						<i class="fas fa-sync-alt me-1"></i>Generate New Recommendations
+					</button>
+				</div>
+				<div class="card-body">
+					<div id="recommendationsContainer">
+						{% if recommended_outfits %}
+							<div class="row">
+								{% for outfit in recommended_outfits %}
+									<div class="col-lg-4 col-md-6 mb-4">
+										<div class="card h-100 shadow-sm">
+											<div class="card-header bg-light">
+												<div class="d-flex justify-content-between align-items-center">
+													<h6 class="mb-0">Outfit {{ forloop.counter }}</h6>
+													<span class="badge bg-primary">{{ outfit.total_items }} items</span>
+												</div>
+											</div>
+											<div class="card-body">
+												<!-- Outfit Items Display -->
+												<div class="outfit-items mb-3">
+													{% for item in outfit.items %}
+													<div class="outfit-item d-flex align-items-center mb-2 p-2 border rounded">
+														{% if item.image_front_url %}
+														<img src="{{ item.image_front_url }}" alt="{{ item.name }}" class="me-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+														{% else %}
+														<div class="me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #f5f5f5; border-radius: 4px;">
+															<i class="fas fa-tshirt text-muted"></i>
+														</div>
+														{% endif %}
+														<div>
+															<div class="fw-semibold">{{ item.name }}</div>
+															<small class="text-muted">{{ item.category }}{% if item.color %} • {{ item.color }}{% endif %}</small>
+														</div>
+													</div>
+													{% endfor %}
+												</div>
+												<!-- Avatar Preview (Front/Back) -->
+												<div class="avatar-preview mb-2">
+													<div class="d-flex justify-content-between align-items-center mb-1">
+														<span class="fw-semibold">Avatar Preview</span>
+														<div class="btn-group btn-group-sm" role="group">
+															<button type="button" class="btn btn-outline-secondary" onclick="toggleView(this, 'front')">Front</button>
+															<button type="button" class="btn btn-outline-secondary" onclick="toggleView(this, 'back')">Back</button>
+														</div>
+													</div>
+													<div class="avatar-canvas border rounded p-2" style="background: #f8f9fa;">
+														<div class="d-flex gap-2 flex-wrap" data-view="front">
+															{% for item in outfit.items %}
+																{% if item.image_front_url %}
+																<img src="{{ item.image_front_url }}" alt="{{ item.name }}" style="height: 64px; width: 64px; object-fit: contain;">
+																{% endif %}
+															{% endfor %}
+														</div>
+														<div class="d-flex gap-2 flex-wrap" data-view="back" style="display:none;">
+															{% for item in outfit.items %}
+																{% if item.image_back_url %}
+																<img src="{{ item.image_back_url }}" alt="{{ item.name }}" style="height: 64px; width: 64px; object-fit: contain;">
+																{% endif %}
+															{% endfor %}
+														</div>
+													</div>
+												</div>
+												<!-- Score -->
+												<div class="mb-2">
+													<div class="d-flex justify-content-between align-items-center mb-1">
+														<span class="fw-semibold">Compatibility Score</span>
+														<span class="text-muted small">{{ outfit.score|floatformat:1 }}%</span>
+													</div>
+													<div class="progress" style="height: 6px;">
+														<div class="progress-bar" role="progressbar" style="width: {% widthratio outfit.score 1 100 %}%" aria-valuenow="{% widthratio outfit.score 1 100 %}" aria-valuemin="0" aria-valuemax="100"></div>
+													</div>
+												</div>
+												<div class="d-flex gap-2 mt-3">
+													<button class="btn btn-outline-primary btn-sm" onclick='saveOutfit({{ outfit|safe }})'>Save Outfit</button>
+													<button class="btn btn-outline-secondary btn-sm" onclick='shareOutfit({{ outfit|safe }})'>Share</button>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+						{% else %}
+							<p class="text-muted">No recommendations available at the moment. Try generating new ones.</p>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <!-- Current Trends Section -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Current Fashion Trends</h5>
-                </div>
-                <div class="card-body">
-                    {% if current_trends %}
-                        <div class="list-group">
-                            {% for trend in current_trends %}
-                                <div class="list-group-item">
-                                    <h6 class="mb-1">{{ trend.name }}</h6>
-                                    <p class="mb-0 small text-muted">{{ trend.description }}</p>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="card-text">No trend data available.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Style Stats Section -->
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Your Style Stats</h5>
-                </div>
-                <div class="card-body">
-                    {% if style_stats.preferred_styles %}
-                        <h6>Your Preferred Styles:</h6>
-                        <ul class="list-group mb-3">
-                            {% for style in style_stats.preferred_styles %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ style.name }}
-                                    <span class="badge bg-primary rounded-pill">{{ style.count }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                    
-                    {% if style_stats.color_preferences %}
-                        <h6>Color Preferences:</h6>
-                        <div class="d-flex mb-3">
-                            {% for color in style_stats.color_preferences %}
-                                <div class="me-2 text-center">
-                                    <div style="width: 30px; height: 30px; background-color: {{ color.hex }}; border-radius: 4px;"></div>
-                                    <small>{{ color.count }}</small>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Personalized Suggestions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Personalized Suggestions</h5>
-                </div>
-                <div class="card-body">
-                    {% if suggestions %}
-                        <div class="list-group">
-                            {% for suggestion in suggestions %}
-                                <div class="list-group-item">
-                                    <h6 class="mb-1">{{ suggestion.title }}</h6>
-                                    <p class="mb-0">{{ suggestion.description }}</p>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="card-text">No personalized suggestions available at this time.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+	<!-- Loading Spinner -->
+	<div id="loadingSpinner" class="text-center py-4" style="display: none;">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+		<p class="mt-2 text-muted">Generating new recommendations...</p>
+	</div>
+
+<script>
+function toggleView(button, view){
+  const cardBody = button.closest('.card-body');
+  if(!cardBody) return;
+  const fronts = cardBody.querySelectorAll('[data-view="front"]');
+  const backs = cardBody.querySelectorAll('[data-view="back"]');
+  fronts.forEach(el => el.style.display = (view === 'front' ? '' : 'none'));
+  backs.forEach(el => el.style.display = (view === 'back' ? '' : 'none'));
+}
+</script>
 {% endblock %} 

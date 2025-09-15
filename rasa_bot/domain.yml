@@ -1,0 +1,103 @@
+version: "3.1"
+
+session_config:
+  session_expiration_time: 60  # value in minutes, 0 means no timeout
+  carry_over_slots_to_new_session: true
+
+intents:
+  - greet
+  - goodbye
+  - thank
+  - outfit_suggestion
+  - weather_outfit
+  - casual_outfit
+  - formal_outfit
+  - color_matching
+  - style_tips
+  - occasion_outfit
+  - fallback
+
+entities:
+  - clothing_type
+  - weather_condition
+  - occasion
+  - color
+  - season
+
+slots:
+  clothing_type:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: clothing_type
+  weather_condition:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: weather_condition
+  occasion:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: occasion
+  color:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: color
+  season:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: season
+
+responses:
+  utter_greet:
+    - text: "👗 Hello! I'm your AI Fashion Stylist, ready to help you look fabulous! I can suggest outfits, give weather-appropriate advice, and share style tips. What would you like to know today? ✨"
+    - text: "Hi there! 👋 I'm your personal fashion assistant. I can help you with outfit suggestions, style advice, and weather-appropriate clothing. How can I assist you today?"
+
+  utter_goodbye:
+    - text: "Goodbye! 👋 Hope I helped you look your best today. Come back anytime for more fashion advice!"
+    - text: "See you later! 💫 Remember, confidence is the best accessory. Have a stylish day!"
+
+  utter_thank:
+    - text: "You're welcome! 😊 I'm here to help you look and feel amazing. Is there anything else you'd like to know about fashion?"
+    - text: "My pleasure! ✨ I love helping with fashion advice. What else can I assist you with today?"
+
+  utter_outfit_suggestion:
+    - text: "I'd love to suggest some outfits for you! Let me create some stylish combinations based on timeless fashion principles and your preferences."
+
+  utter_weather_outfit:
+    - text: "Great question! Let me suggest appropriate outfits for the weather conditions. I'll make sure you're both stylish and comfortable!"
+
+  utter_casual_outfit:
+    - text: "Casual looks are all about comfort and style! Let me find some relaxed, versatile pieces that will keep you looking great while feeling comfortable."
+
+  utter_formal_outfit:
+    - text: "For formal occasions, we want to look polished and professional. Let me suggest some sophisticated combinations that will make a great impression."
+
+  utter_color_matching:
+    - text: "Color coordination is key to great style! Let me share some color harmony tips and suggest perfect color combinations."
+
+  utter_style_tips:
+    - text: "I'd love to share some fashion wisdom! Let me give you some style tips that will help you build a versatile, coordinated wardrobe and always look your best."
+
+  utter_occasion_outfit:
+    - text: "Perfect! Let me suggest some outfit combinations that are perfect for your occasion. I'll consider the formality level and venue."
+
+  utter_fallback:
+    - text: "I'm still learning about fashion! Try asking me about outfit suggestions, style tips, weather-appropriate clothing, or specific occasions. I'm here to help you look fabulous! 👗✨"
+
+actions:
+  - action_outfit_suggestion
+  - action_weather_outfit
+  - action_casual_outfit
+  - action_formal_outfit
+  - action_color_matching
+  - action_style_tips
+  - action_occasion_outfit
+  - action_fallback
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true 

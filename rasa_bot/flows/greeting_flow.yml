@@ -1,0 +1,12 @@
+version: "3.1"
+
+flows:
+  - name: greeting_flow
+    description: "Handle user greetings and initial interactions"
+    steps:
+      - user: greet
+      - bot: utter_greet
+      - user: outfit_suggestion
+      - bot: action_outfit_suggestion
+      - user: thank
+      - bot: utter_thank

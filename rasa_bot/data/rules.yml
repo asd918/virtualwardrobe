@@ -1,0 +1,62 @@
+version: "3.1"
+
+rules:
+- rule: Say hello anytime the user says hello
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- rule: Say goodbye anytime the user says goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- rule: Say thank you anytime the user says thank you
+  steps:
+  - intent: thank
+  - action: utter_thank
+
+- rule: Handle outfit suggestions
+  steps:
+  - intent: outfit_suggestion
+  - action: action_outfit_suggestion
+
+- rule: Handle weather-based outfit requests
+  steps:
+  - intent: weather_outfit
+  - action: action_weather_outfit
+
+- rule: Handle casual outfit requests
+  steps:
+  - intent: casual_outfit
+  - action: action_casual_outfit
+
+- rule: Handle formal outfit requests
+  steps:
+  - intent: formal_outfit
+  - action: action_formal_outfit
+
+- rule: Handle color matching requests
+  steps:
+  - intent: color_matching
+  - action: action_color_matching
+
+- rule: Handle style tips requests
+  steps:
+  - intent: style_tips
+  - action: action_style_tips
+
+- rule: Handle occasion outfit requests
+  steps:
+  - intent: occasion_outfit
+  - action: action_occasion_outfit
+
+- rule: Handle fallback
+  steps:
+  - intent: fallback
+  - action: action_fallback
+
+- rule: Handle out-of-scope requests
+  steps:
+  - intent: nlu_fallback
+  - action: action_fallback 

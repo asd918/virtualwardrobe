@@ -1,0 +1,11 @@
+version: "3.1"
+
+flows:
+  - name: fallback_flow
+    description: "Handle unclear or out-of-scope requests"
+    steps:
+      - user: fallback
+      - bot: action_fallback
+      
+      - user: goodbye
+      - bot: utter_goodbye
